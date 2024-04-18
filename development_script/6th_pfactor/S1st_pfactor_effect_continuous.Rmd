@@ -1,0 +1,370 @@
+---
+title: "S1st_pfactor_effect_continuous"
+author: "Xiaoyu xu"
+date: "4/17/2024"
+output: html_document
+---
+
+This script is to eveluate associations between p-factor and SC strength using GAMMs.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mgcv)
+library(parallel)
+library(tidyverse)
+library(reshape)
+library(RColorBrewer)
+rm(list = ls())
+CVthr=75
+wdpath <- getwd()
+if (str_detect(wdpath, "Users")){
+  resultFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_ABCD'
+  interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_ABCD'
+  functionFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
+  FigureFolder<-paste0('/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_ABCD_final/SA12/CV', CVthr)
+  source(paste0(functionFolder, "/SCrankcorr_beforegam.R"))
+  perm.id.full<-readRDS("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA12_sphericalrotations_N10000.rds")
+  
+}else if (str_detect(wdpath, "cuizaixu_lab")){
+  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/interdataFolder_ABCD'
+  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/Rcode_SCdevelopment/gamfunction'
+  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/results_ABCD'
+}
+# source function
+source(paste0(functionFolder, '/gamminteraction.R'))
+source(paste0(functionFolder, '/gaminteraction.R'))
+detectCores()
+# load data
+SCdata<-readRDS(paste0(interfileFolder, '/SCdata_SA12_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.combatPFactorGeneral.rds'))
+SCdata[,c("gender", "handness", "race")] <- lapply(SCdata[,c("gender", "handness", "race")], as.factor)
+SA12_10 <- read.csv(paste0(interfileFolder, '/SA12_10.csv'))
+plotdata <- readRDS(paste0(interfileFolder, '/plotdatasum.df_SA12_sumSCinvnode_siteall_CV', CVthr,'.rds'))
+# scale the SC strength by their initial strength in the age span
+SCdata.diw <- SCdata
+for (x in 1:78){
+  region <- grep("SC.", names(SCdata), value = T)[x]
+  plotdata.tmp <- plotdata[plotdata$SC_label==paste0("SC.", x, "_h"), ]
+  SCstrength.diw <- SCdata[,region] / plotdata.tmp$fit[1]
+  SCdata.diw[,region] <- SCstrength.diw
+}
+SCdata.diw[,grep("SC.", names(SCdata), value = T)] <- lapply(SCdata.diw[,grep("SC.", names(SCdata), value = T)], as.numeric)
+SCdata.diw[,c("gender", "race", "handness")] <- lapply(SCdata.diw[,c("gender", "race", "handness")], as.factor)
+
+```
+
+## 1. p-factor association
+
+```{r pfactor_T}
+dataname <- "SCdata"
+smooth_var <- "age" 
+int_var.predict.percentile=0.1
+covariates <- "gender+handness+race+mean_fd" 
+knots=3
+set_fx = TRUE
+increments = 1000
+stats_only=TRUE
+int_var <- "general"
+if (str_detect(wdpath, "cuizaixu_lab")){
+  resultsum <- mclapply(1:78, function(x){
+    region <- grep("SC.", names(SCdata), value=T)[x]
+    gamresult <- gamm.smooth.predict.covariateinteraction(region, dataname, smooth_var, int_var, int_var.predict.percentile, covariates, knots, set_fx, increments, stats_only)
+    gamresult <- as.data.frame(gamresult)
+
+    return(gamresult)
+  }, mc.cores = 50)
+  gamresult.tmp <- do.call(rbind, resultsum)
+  gamresult.tmp[3:12] <- lapply(gamresult.tmp[3:12], as.numeric)
+  gamresult.tmp$bootstrap_pvalue.fdr <- p.adjust(gamresult.tmp$bootstrap_pvalue, method = "fdr")
+  gamresult.tmp$bootstrap.P.disease.fdr <- p.adjust(gamresult.tmp$bootstrap.P.disease, method = "fdr")
+
+  print(paste0(sum(gamresult.tmp$bootstrap_pvalue.fdr<0.05), " edges have significant age by ", int_var, " effect."))
+  print(paste0(sum(gamresult.tmp$bootstrap.P.disease.fdr<0.05), " edges have significant ", int_var, " effect."))
+
+  saveRDS(gamresult.tmp, paste0(interfileFolder, "/gamresult_Int_age_pFactor_", int_var, "_CV", CVthr, ".rds"))
+}
+
+# Correlation to connectional axis
+SCrank.df.whole <- data.frame(matrix(NA,1,5))
+names(SCrank.df.whole) <- c("ds.resolution", "Interest.var",  "r.spearman",  "p.spin", "int_var")
+gamresult.tmp <- readRDS(paste0(interfileFolder, "/gamresult_Int_age_pFactor_", int_var, "_CV", CVthr,".rds"))
+gamresult.tmp[3:12] <- lapply(gamresult.tmp[3:12], as.numeric)
+gamresult.tmp$bootstrap.P.disease.fdr <- p.adjust(gamresult.tmp$bootstrap.P.disease, method = "fdr")
+print(paste0(sum(gamresult.tmp$bootstrap.P.disease.fdr<0.05), " edges have significant ", int_var, " effect."))
+# CV75: 30 edges have significant general effect.
+# CV25: 8 edges have significant general effect.
+SCrank.df.age <- SCrankcorr(gamresult.tmp, "IntpartialRsq", 12, perm.id.full, dsdata=FALSE)
+SCrank.df.general <- SCrankcorr(gamresult.tmp, "T.disease", 12, perm.id.full, dsdata=FALSE)
+SCrank.df <- rbind(SCrank.df.age, SCrank.df.general)
+SCrank.df$int_var <- int_var
+SCrank.df.whole <- rbind(SCrank.df.whole, SCrank.df)
+SCrank.tmp <- SCrankcorr(gamresult.tmp, "IntpartialRsq", 12, perm.id.full, dsdata=T)
+SCrank <- SCrank.tmp$SCrank
+SCrank.df.whole
+
+```
+
+## 2. scatter polts & matrix graph
+Figure 7b, c
+
+```{r scatter_plot}
+
+for (Interest.var in c("IntpartialRsq", "T.disease")){
+  tmpvar <- gamresult.tmp[,Interest.var]
+  limthr <- max(abs(gamresult.tmp[,Interest.var]), na.rm=T)
+  if (Interest.var=="T.disease" & int_var=="general"){
+    ytitle=expression(italic("p")*"-factor association ("*italic("T")*" value)")
+  }else{ytitle=Interest.var}
+  
+  # scatter plot
+  scatterFig <- ggplot(data=gamresult.tmp)+
+    geom_point(aes(x=SCrank, y=tmpvar, color=tmpvar), size=5)+
+    geom_smooth(aes(x=SCrank, y=tmpvar),linewidth=1.4, method ="lm", color="black")+
+    scale_color_distiller(type="seq", palette = "RdBu", direction = -1, limits=c(-limthr, limthr))+
+    labs(x="Connectional axis rank", y=ytitle)+
+    theme_classic()+
+    theme(axis.text=element_text(size=23.2, color="black"), 
+          axis.title =element_text(size=23.2),aspect.ratio = 1.03,axis.line = element_line(linewidth = 0.6),
+          axis.ticks = element_line(linewidth = 0.6),
+          plot.title = element_text(size=15, hjust = 0.5, vjust=0),
+          plot.subtitle = element_text(size=15, hjust = 0.9, vjust=-6),
+          plot.background=element_rect(fill="transparent"),
+          panel.background=element_rect(fill="transparent"),plot.margin = margin(t=10,r=5,b=5,l=5, unit="pt"),
+          legend.position = "none")
+  scatterFig
+  ggsave(paste0(FigureFolder, '/Disease/pFactor/',Interest.var, '_',int_var,'_SCrankcorr.tiff'),scatterFig, width=13, height =13, units = "cm")
+  ggsave(paste0(FigureFolder, '/Disease/pFactor/',Interest.var, '_',int_var,'_SCrankcorr.svg'),scatterFig, dpi=600,width=14.8, height =13.8, units = "cm")
+  
+  # matrix
+  Matrix.tmp.T <- matrix(NA,12,12)
+  Matrix.tmp.T[lower.tri(Matrix.tmp.T, diag = T)] <- tmpvar
+  Matrix.tmp.T[upper.tri(Matrix.tmp.T)] <- t(Matrix.tmp.T)[upper.tri(Matrix.tmp.T)]
+  colnames(Matrix.tmp.T) <-seq(1, 12)
+  rownames(Matrix.tmp.T) <-seq(1, 12)
+  matrixtmp.df <- as.data.frame(Matrix.tmp.T)
+  matrixtmp.df$nodeid <- seq(1, 12)
+  matrixtmp.df.melt <- melt(matrixtmp.df,id.vars=c("nodeid"))
+  matrixtmp.df.melt$variable<-as.numeric(matrixtmp.df.melt$variable)
+  matrixtmp.df.melt$nodeid<-0-matrixtmp.df.melt$nodeid
+  matrixtmp.df.melt$value<-as.numeric(matrixtmp.df.melt$value)
+  
+  Matrix.tmp.sig <- matrix(NA,12,12)
+  if (Interest.var=="IntpartialRsq"){
+    Matrix.tmp.sig[lower.tri(Matrix.tmp.sig, diag = T)] <- (gamresult.tmp$bootstrap_pvalue.fdr < 0.05)
+  }else{
+    Matrix.tmp.sig[lower.tri(Matrix.tmp.sig, diag = T)] <- (gamresult.tmp$bootstrap.P.disease.fdr < 0.05)
+  }
+  
+  Matrix.tmp.sig[upper.tri(Matrix.tmp.sig)] <- t(Matrix.tmp.sig)[upper.tri(Matrix.tmp.sig)]
+  colnames(Matrix.tmp.sig) <-seq(1, 12)
+  rownames(Matrix.tmp.sig) <-seq(1, 12)
+  matrixtmp.df.sig <- as.data.frame(Matrix.tmp.sig)
+  matrixtmp.df.sig$nodeid <- seq(1, 12)
+  matrixtmp.df.sig.melt <- melt(matrixtmp.df.sig,id.vars=c("nodeid"))
+  matrixtmp.df.sig.melt$variable<-as.numeric(matrixtmp.df.sig.melt$variable)
+  matrixtmp.df.sig.melt$nodeid<-0-matrixtmp.df.sig.melt$nodeid
+  matrixtmp.df.sig.melt$value<-as.numeric(matrixtmp.df.sig.melt$value)
+  matrixtmp.df.sig.melt <- matrixtmp.df.sig.melt[-which(matrixtmp.df.sig.melt$value==0),]
+  titlematrix <- paste0(int_var, "_", Interest.var)
+  linerange_frame<-data.frame(x=c(0.5,12+0.5), ymin =rep(-12-0.5, times=2), ymax =rep(-0.5, times=2),
+                              y=c(-0.5, -12-0.5), xmin=rep(0.5, times=2), xmax=rep(12+0.5, times=2))
+  
+  MatFig<-ggplot(data =matrixtmp.df.melt)+
+    geom_tile(aes(x=variable, y=nodeid, fill = value, color=value))+
+    scale_fill_distiller(type="seq", palette = "RdBu",na.value = "grey", limits=c(-limthr, limthr))+
+    scale_color_distiller(type="seq", palette = "RdBu",na.value = "grey", limits=c(-limthr, limthr))+
+    geom_text(data =matrixtmp.df.sig.melt, aes(x=variable, y=nodeid, label = "*"), vjust = 0.7, hjust = 0.5, size=6)+
+    geom_linerange(data=linerange_frame, aes(y=y, xmin =xmin, xmax =xmax), color="black", linewidth=0.5)+
+    geom_linerange(data=linerange_frame, aes(x=x, ymin =ymin, ymax =ymax), color="black", linewidth=0.5)+
+    geom_segment(aes(x = 0.5 , y = -0.5 , xend = 12+0.5 ,yend = -12-0.5), color="black", linewidth=0.5)+
+    ggtitle(label = titlematrix)+labs(x=NULL, y=NULL)+
+    scale_y_continuous(breaks=NULL, labels = NULL)+
+    scale_x_continuous(breaks=NULL, labels = NULL)+
+    theme(axis.line = element_blank(),
+          #axis.ticks=element_line(linewidth = 0),
+          axis.text.x=element_text(size=12, angle=45, hjust=1),
+          axis.text.y=element_text(size=12, angle=315, hjust=1,vjust=1),
+          axis.title =element_text(size=18),
+          plot.title = element_text(size=12, hjust = 0.5),
+          legend.title=element_text(size=18),
+          legend.text=element_text(size=18),
+          panel.background=element_rect(fill=NA),
+          panel.grid.major=element_line(linewidth = 0),
+          panel.grid.minor=element_line(linewidth = 1))
+  MatFig
+  filename<-paste0(FigureFolder, '/Disease/pFactor/',Interest.var, '_',int_var,'_Matrix12.tiff')
+  ggsave(filename, MatFig,  height = 18, width = 20, units = "cm")
+  
+}
+
+```
+
+## 3. Ineraction plot
+Developmental trajectories by different levels of p-factor. Figure 7e.
+```{r SCdev_by_pfactor}
+dataname <- "SCdata.diw"
+int_var <- "general"
+stats_only <- FALSE
+
+if (exists(paste0(interfileFolder, 'plotdata_high90_low10_pFactor_', int_var, '_develop_CV',CVthr ,'.rds'))==0){
+  resultsum <- mclapply(1:78, function(x){
+    int_var.predict.percentile <- 0.1
+    region <- grep("SC.", names(SCdata.diw), value=T)[x]
+    result.all <- gamm.smooth.predict.covariateinteraction(region, dataname, smooth_var, int_var, int_var.predict.percentile, covariates, knots, set_fx, increments, stats_only)
+    plotdata.low <- result.all[[2]]
+    plotdata.low$pFactor <- int_var
+    plotdata.low$label <- "low"
+    
+    int_var.predict.percentile <- 0.9
+    result.all <- gamm.smooth.predict.covariateinteraction(region, dataname, smooth_var, int_var, int_var.predict.percentile, covariates, knots, set_fx, increments, stats_only)
+    plotdata.high <- result.all[[2]]
+    plotdata.high$pFactor <- int_var
+    plotdata.high$label <- "high"
+    
+    plotdata <- rbind(plotdata.low, plotdata.high)
+    plotdata$SC_label <- region
+    
+    return(plotdata)
+  }, mc.cores = 4)
+  saveRDS(resultsum, paste0(interfileFolder, 'plotdata_high90_low10_pFactor_', int_var, '_develop_CV',CVthr ,'.rds'))
+  
+}
+resultsum <- readRDS(paste0(interfileFolder, 'plotdata_high90_low10_pFactor_', int_var, '_develop_CV',CVthr ,'.rds'))
+plotdata <- do.call(rbind, resultsum)
+plotdata <- merge(plotdata, SA12_10, by="SC_label")
+
+plotdf.decile.low <- plotdata %>% filter(label=="low") %>% 
+  group_by(decile, age) %>%
+  summarise(fit.avg = mean(fitted), decile=mean(decile))
+plotdf.decile.low$label <- "low"
+
+plotdf.decile.high <- plotdata %>% filter(label=="high") %>% 
+  group_by(decile, age) %>%
+  summarise(fit.avg = mean(fitted), decile=mean(decile))
+plotdf.decile.high$label <- "high"
+
+plotdf.decile <- rbind(plotdf.decile.low, plotdf.decile.high)
+
+
+colorid <- rev(brewer.pal(10, "RdBu"))
+for (i in 1:10){
+  plotdf.tmp <- plotdf.decile[plotdf.decile$decile==i,]
+  colorindex <- colorid[i]
+  if (i == 1 | i ==6){
+    mytheme=theme(axis.text=element_text(size=21, color="black"), 
+                  axis.title =element_text(size=21),aspect.ratio = 1,
+                  axis.line = element_line(linewidth=0.5),axis.ticks = element_line(linewidth=0.5),
+                  plot.background=element_rect(fill="transparent"),
+                  panel.border = element_rect(fill=NA, color="transparent"),
+                  panel.background=element_rect(fill="transparent", color="transparent"), legend.position = "none")
+    
+  }else{
+    mytheme=theme(axis.text.x =element_text(size=21, color="black"), 
+                  axis.text.y =element_text(size=21, color="transparent"),
+                  axis.title.x =element_text(size=21),
+                  axis.title.y =element_text(size=21, colour = "transparent"),
+                  aspect.ratio = 1,
+                  axis.line.x = element_line(linewidth=0.5), 
+                  axis.line.y = element_line(linewidth=0.5, colour = "transparent"),
+                  axis.ticks.x = element_line(linewidth=0.5),
+                  axis.ticks.y = element_line(linewidth=0.5, colour = "transparent"),
+                  plot.background=element_rect(fill="transparent"),
+                  panel.grid=element_line(linewidth=0.5, colour = "transparent"),
+                  panel.border = element_rect(fill=NA, color="transparent"),
+                  panel.background=element_rect(fill="transparent", color="transparent"), legend.position = "none")
+    
+  }
+  # high (abnormal) is dashed; low (normal) is solid
+  Fig <- ggplot(data=plotdf.tmp)+
+    geom_line(aes(x=age, y=fit.avg, group=label, linetype=label),linewidth=1.2, color=colorindex)+
+    scale_y_continuous(breaks = c(0.9, 1.0), limits=c(0.8973, 1.0837))+
+    scale_linetype_manual(values=c("dashed", "solid"))+
+    labs(x=NULL, y="SC strength (ratio)")+
+    mytheme
+  Fig
+  ggsave(paste0(FigureFolder, '/Disease/pFactor/Interaction/developmentcurve_decile', i, '.tiff'),Fig, width = 10, height = 10, units = "cm")
+  ggsave(paste0(FigureFolder, '/Disease/pFactor/Interaction/developmentcurve_decile', i, '.svg'),Fig, width = 10, height = 10, units = "cm")
+}
+
+# Draw 10 decile lines separately for 2 levels of cognition
+# low
+ggplot(data=plotdf.decile.low, aes(x=age, y=fit.avg, group=decile, color=decile))+
+  geom_line(size=1.5, alpha=0.8, linetype="solid")+
+  #paletteer::scale_color_paletteer_c("pals::ocean.matter", direction = -1, values=colorbarvalues.meanderiv2, oob = squish) +
+  scale_color_distiller(type="seq", palette = "RdBu", direction = -1)+
+  labs(x="Age (years)", y="SC strength (ratio)")+
+  #scale_color_manual(values = rev(brewer.pal(6, "RdBu")))+
+  theme_classic()+
+  theme(axis.text=element_text(size=20, color="black"), 
+        axis.title =element_text(size=20, color="black"),aspect.ratio = 0.8,
+        plot.background=element_rect(fill="transparent"),legend.position = "none",
+        panel.background=element_rect(fill="transparent"),
+        plot.title = element_text(size=15, hjust = 0.5))
+ggsave(paste0(FigureFolder, '/Disease/pFactor/Interaction/developmentcurve_decile_ratio_low.tiff'),width = 14, height = 12, units = "cm")
+ggsave(paste0(FigureFolder, '/Disease/pFactor/Interaction/developmentcurve_decile_ratio_low.svg'),width = 14, height = 12, units = "cm")
+
+# high
+ggplot(data=plotdf.decile.high, aes(x=age, y=fit.avg, group=decile, color=decile))+
+  geom_line(size=1.5, alpha=0.8, linetype="dashed")+
+  #paletteer::scale_color_paletteer_c("pals::ocean.matter", direction = -1, values=colorbarvalues.meanderiv2, oob = squish) +
+  scale_color_distiller(type="seq", palette = "RdBu", direction = -1)+
+  labs(x="Age (years)", y="SC strength (ratio)")+
+  #scale_color_manual(values = rev(brewer.pal(6, "RdBu")))+
+  theme_classic()+
+  theme(axis.text=element_text(size=20, color="black"), 
+        axis.title =element_text(size=20, color="black"),aspect.ratio = 0.8,
+        plot.background=element_rect(fill="transparent"),legend.position = "none",
+        panel.background=element_rect(fill="transparent"),
+        plot.title = element_text(size=15, hjust = 0.5))
+ggsave(paste0(FigureFolder, '/Disease/pFactor/Interaction/developmentcurve_decile_ratio_high.tiff'),width = 14, height = 12, units = "cm")
+ggsave(paste0(FigureFolder, '/Disease/pFactor/Interaction/developmentcurve_decile_ratio_high.svg'),width = 14, height = 12, units = "cm")
+
+
+```
+
+## 4. Exemple scatter plots: SC strength ~ p-factor
+```{r exemples}
+# plot data
+SA12_10$SCrank[SA12_10$SC_label %in% c("SC.44_h", "SC.53_h", "SC.74_h")]
+gamresult.tmp$T.disease[gamresult.tmp$parcel %in% c("SC.44_h", "SC.53_h", "SC.74_h")]
+# 2.684923 4.344742 3.397559
+gamresult.tmp$bootstrap.P.disease.fdr[gamresult.tmp$parcel %in% c("SC.44_h", "SC.53_h", "SC.74_h")]
+# 0.03691046 0.01298701 0.01948052
+residuals.plot <- list(); n=0
+for (region in c("SC.44_h", "SC.53_h", "SC.74_h")){
+  residuals.tmp <- gamm.smooth.predict.covariateinteraction(region, dataname, smooth_var, int_var, int_var.predict.percentile, covariates, knots, set_fx, increments, stats_only=T,if_residual=T)
+  names(residuals.tmp) <- c(region, "general", "scanID")
+  residuals.tmp$subID <- str_split_i(residuals.tmp$scanID, "_", 1)
+  n=n+1
+  residuals.plot[[n]] <- residuals.tmp
+}
+names(residuals.plot) <- c("SC.44_h", "SC.53_h", "SC.74_h")
+
+#N=44, 53, 74
+region="SC.74_h"
+plotdata_N <- residuals.plot[[region]]
+plotdata_N$event <- str_split_i(plotdata_N$scanID, "_", 2)
+SCrank = SA12_10$SCrank[SA12_10$SC_label==region]
+tmp.value <- plotdata_N[,region]
+ggplot(data = plotdata_N)+
+  geom_line(aes(x=tmp.value, y=general, group=subID), color="black", alpha=0.2)+
+  geom_point(aes(x=tmp.value, y=general),color="grey", size=0.8, alpha=0.3)+
+  geom_smooth(aes(x=tmp.value, y=general),linewidth=1.4, method="lm", color="black")+
+  #scale_color_manual(values=c("#36659D", "#C9653A"))+
+  labs(x="SC strength", y=expression(italic("p")*"-factor"))+
+  theme_classic()+
+  theme(axis.text=element_text(size=22, color="black"), 
+        axis.title =element_text(size=22),aspect.ratio = 0.8,
+        axis.line = element_line(linewidth = 0.5),axis.ticks = element_line(linewidth = 0.5),
+        plot.title = element_text(size=20, hjust = 0.5, vjust=0),
+        plot.subtitle = element_text(size=15, hjust = 0.9, vjust=-6),
+        plot.background=element_rect(fill="transparent"),
+        panel.background=element_rect(fill="transparent"),
+        legend.position = "none")
+
+ggsave(paste0(FigureFolder, "/Disease/pFactor/", region, "_scatterplot_SCrank", SCrank,".svg"), width=14, height=14, units = "cm")
+ggsave(paste0(FigureFolder, "/Disease/pFactor/", region, "_scatterplot_SCrank", SCrank,".tiff"), width=14, height=14, units = "cm")
+
+
+```
+
+
+
