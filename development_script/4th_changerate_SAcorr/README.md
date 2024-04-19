@@ -4,7 +4,7 @@ This folder contains scripts designed for age-resolved developmental analyses an
 ## S1st_SAcorr_alongAge_*.Rmd
 This script facilitates age-resolved developmental effect analysis. Spearman’s correlations were computed between the rank of the S-A connectional axis and the developmental rate assessed by the first derivative at 1,000 specific age points sampled across age spans. Subsequently, correlation coefficients between the connectional axis rank and the posterior derivative/derivative at each age point were determined. The resulting distribution of posterior correlation coefficients was employed to ascertain the median and 95% credible interval of alignment at each age point. `Fig. 4a~d`, `Fig. 5g~i`,  and `Supplementary Fig. S3d~f, S4d~e` were generated using this script. 
 
-`V1st_SAcorr_alongAge_\*\_resolution.R`
+`V1st_SAcorr_alongAge_*_resolution.R`
 Validation script to conduct age-resolved analysis using large-scale SC network of different resolutions.
 `V1st_SAcorr_alongAge_*_control_length.R`
 Validation script to conduct age-resolved analysis when controlling for averaged fiber length.
