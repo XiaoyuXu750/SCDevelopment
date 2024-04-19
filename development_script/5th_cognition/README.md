@@ -8,10 +8,10 @@ This script aims to assess the relationship between fluid cognition and SC stren
 Validation script for different resolutions of large-scale SC matrices.
 
 ## S2nd_compositescorePlot_scatterplot.Rmd
-This script generated the schema of fluid cognition components (`Fig. 6a`) and the scatter plots between SC strength and fluid cognition for 3 exemplified connections (`Fig. 6d`). Given the associations was only significant in the ABCD dataset, the scatter plots were only depicted using the ABCD dataset.
+This script generated the schema of fluid cognition components (`Fig. 6a`) and the scatter plots between SC strength and fluid cognition for 3 exemplified connections (`Fig. 6d`). Given the associations were only significant in the ABCD dataset, the scatter plots were only depicted using the ABCD dataset.
 
-S3rd_SCdev_vary_by_cognition.Rmd
-This script depicts developmental trajectories vary by baseline cognition levels in the ABCD dataset. We fitted an age-by-cognition interaction GAM model for each connection. Using the acquired models, we estimated SC strength by assigning cognitive performance as low and high levels respectively. To define these levels, we used the 10th percentile of baseline cognitive performance for the low level, and the 90th percentile for the high level. We then averaged trajectories for low and high cognition levels independently within deciles of the S-A connectional axis for visualization purposes. This script generates `Fig. 6e`.
+## S3rd_SCdev_vary_by_cognition.Rmd
+This script depicts developmental trajectories varying by baseline cognition levels in the ABCD dataset. We fitted an age-by-cognition interaction GAM model for each connection. Using the acquired models, we estimated SC strength by assigning cognitive performance as low and high levels respectively. To define these levels, we used the 10th percentile of baseline cognitive performance for the low level, and the 90th percentile for the high level. We then averaged trajectories for low and high cognition levels independently within deciles of the S-A connectional axis for visualization purposes. This script generates `Fig. 6e`.
 
 
 
