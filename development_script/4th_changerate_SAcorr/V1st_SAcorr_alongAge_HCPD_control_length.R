@@ -15,7 +15,7 @@ wdpath <- getwd()
 if (str_detect(wdpath, "Users")){
   interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_HCPD'
   functionFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
-  resultFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results'
+  resultFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_HCPD'
   FigureFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCPD_final/SA12'
   
 }else{
@@ -31,7 +31,7 @@ derivative.posterior.df <- readRDS(paste0(resultFolder, '/derivative.posterior.d
 derivative.df <- readRDS(paste0(resultFolder, '/derivative.df78_CV', CVthr,'.rds'))
 SCdata <- readRDS(paste0(interfileFolder, '/SCdata_SA12_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.merge.rds'))
 #### source function
-source(paste0(functionFolder, "/SCrankcorr_beforegam.R"))
+source(paste0(functionFolder, "/SCrankcorr.R"))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 perm.id.full<-readRDS("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA12_sphericalrotations_N10000.rds")
 meanlength <- colMeans(SCdata[,which(str_detect(names(SCdata), "length"))])

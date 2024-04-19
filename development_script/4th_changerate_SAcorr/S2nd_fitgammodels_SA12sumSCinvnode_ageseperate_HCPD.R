@@ -27,7 +27,7 @@ source(paste0(functionFolder, '/gamsmooth.R'))
 perm.id.full<-readRDS("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA12_sphericalrotations_N10000.rds")
 source("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/rotate.parcellation.R")
 source("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/perm.sphere.p.R")
-source(paste0(functionFolder, '/SCrankcorr_beforegam.R'))
+source(paste0(functionFolder, '/SCrankcorr.R'))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 detectCores()
 ## calculate gam results

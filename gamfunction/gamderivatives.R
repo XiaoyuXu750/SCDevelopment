@@ -1,7 +1,9 @@
 #### DERIVATIVES ####
 library(gratia)
 
-##Function to compute smooth derivatives for a main GAM model and for individual draws from the simulated posterior distribution
+## Function to compute smooth derivatives for a main GAM or GAMM model and for individual draws from the simulated posterior distribution
+## Modifications were made based on Sydnor, et al. https://github.com/PennLINC/spatiotemp_dev_plasticity/blob/main/gam_models/GAM_functions.R
+
 gam.derivatives <- function(modobj,smooth_var, draws, increments, return_posterior_derivatives = TRUE){
   
   #Set parameters

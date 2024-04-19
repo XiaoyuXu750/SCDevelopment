@@ -7,6 +7,7 @@ library(ecostats)
 set.seed(925)
 #### FIT GAM SMOOTH ####
 ##Function to fit a GAM (measure ~ s(smooth_var, k = knots, fx = set_fx) + covariates)) per each edge and save out statistics and derivative-based characteristics
+##Modifications were made based on Sydnor, et al. https://github.com/PennLINC/spatiotemp_dev_plasticity/blob/main/gam_models/GAM_functions.R
 gam.fit.smooth <- function(region, dataname, smooth_var, covariates, knots, set_fx = FALSE, stats_only = FALSE, mod_only = FALSE){
   
   #Fit the gam

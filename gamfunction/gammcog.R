@@ -37,7 +37,7 @@ pboot <- function(modelobj){
 
 
 #### FIT GAM SMOOTH ####
-##Function to fit a GAM (measure ~ s(smooth_var, k = knots, fx = set_fx) + covariates)) per each region in atlas and save out statistics and derivative-based characteristics
+##Function to fit a GAMM (measure ~ s(smooth_var, k = knots, fx = set_fx) + covariates)) per each region in atlas and save out statistics and derivative-based characteristics
 gam.fit.cognition <- function(region, dataname, cognition_var, smooth_var, covariates, knots,corrmethod, set_fx = FALSE, stats_only = FALSE){
   
   #Fit the gam

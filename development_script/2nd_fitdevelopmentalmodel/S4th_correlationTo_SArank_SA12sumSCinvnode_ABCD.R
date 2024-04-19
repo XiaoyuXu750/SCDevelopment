@@ -37,7 +37,7 @@ corr.test(meanSC, gamresult$partialRsq) # r=0.16, p=0.17
 boxplot(gamresult$partialRsq)
 summary(gamresult)
 #### source function
-source(paste0(functionFolder, '/SCrankcorr_beforegam.R'))
+source(paste0(functionFolder, '/SCrankcorr.R'))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 
 #### 1. calculate correlation to SC rank

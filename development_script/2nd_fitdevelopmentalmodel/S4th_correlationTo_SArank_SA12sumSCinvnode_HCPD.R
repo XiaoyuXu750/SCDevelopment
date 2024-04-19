@@ -16,7 +16,7 @@ library(reshape)
 rm(list = ls())
 demopath<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/demopath'
 functionFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
-resultFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results'
+resultFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_HCPD'
 interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_HCPD'
 FigureFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCPD_final/SA12'
 
@@ -28,7 +28,7 @@ gamresult$sig <- (gamresult$pfdr < 0.05)
 SCdata <- readRDS(paste0(interfileFolder, '/SCdata_SA12_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.merge.rds'))
 perm.id.full<-readRDS("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA12_sphericalrotations_N10000.rds")
 #### source function
-source(paste0(functionFolder, '/SCrankcorr_beforegam.R'))
+source(paste0(functionFolder, '/SCrankcorr.R'))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 #### description
 meanSC <- colMeans(SCdata[,which(str_detect(names(SCdata), "SC."))])

@@ -1,3 +1,4 @@
+# This function can generate `values` for scale_color_distiller.
 colorbarvalues <- function(inputvalue, midprob){
   middle <- quantile(inputvalue, probs=midprob, na.rm=T)
   maxup<- max(inputvalue, na.rm = T)

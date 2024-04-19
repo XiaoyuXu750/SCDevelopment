@@ -23,11 +23,11 @@ rm(list = ls())
 CVthr = 75
 wdpath <- getwd()
 if (str_detect(wdpath, "Users")){
-resultFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results'
+resultFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_HCPD'
 interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_HCPD'
 functionFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
 FigureFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCPD_final/SA12'
-  source(paste0(functionFolder, "/SCrankcorr_beforegam.R"))
+  source(paste0(functionFolder, "/SCrankcorr.R"))
   perm.id.full<-readRDS("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA12_sphericalrotations_N10000.rds")
   
 }else if (str_detect(wdpath, "cuizaixu_lab")){

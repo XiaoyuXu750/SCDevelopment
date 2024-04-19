@@ -1,5 +1,5 @@
 library(ggplot2)
-FigureFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCP_final/SA12'
+FigureFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCPD_final/SA12'
 
 # Connectional rank
 Matrix.tmp <- matrix(NA, nrow = 12, ncol=12)

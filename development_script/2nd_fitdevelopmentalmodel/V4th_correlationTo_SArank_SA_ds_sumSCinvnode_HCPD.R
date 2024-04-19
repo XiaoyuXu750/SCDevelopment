@@ -14,7 +14,7 @@ elementnum <- ds.resolution*(ds.resolution+1) /2
 
 demopath<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/demopath'
 functionFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
-resultFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results'
+resultFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_HCPD'
 interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_HCPD'
 FigureFolder<-paste0('/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCPD_final/SA', ds.resolution)
 
@@ -24,7 +24,7 @@ gamresult<-readRDS(paste0(interfileFolder, '/gamresults', elementnum, '_sumSCinv
 SCdata <- readRDS(paste0(interfileFolder, '/SCdata_SA', ds.resolution, '_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.merge.rds'))
 perm.id.full<-readRDS(paste0("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA", ds.resolution, "_sphericalrotations_N10000.rds"))
 #### source function
-source(paste0(functionFolder, '/SCrankcorr_beforegam.R'))
+source(paste0(functionFolder, '/SCrankcorr.R'))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 
 #### convert critical ages of insignificantly developmental edges to NA

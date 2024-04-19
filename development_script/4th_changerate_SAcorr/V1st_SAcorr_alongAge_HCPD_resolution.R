@@ -18,7 +18,7 @@ elementnum <- ds.resolution*(ds.resolution+1) /2
 # set path
 wdpath <- getwd()
 if (str_detect(wdpath, "Users")){
-  resultFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results'
+  resultFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_HCPD'
   interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_HCPD'
   functionFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
   FigureFolder<-paste0('/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCPD_final/SA', ds.resolution)
@@ -34,7 +34,7 @@ derivative.posterior.df <- readRDS(paste0(resultFolder, '/derivative.posterior.d
 derivative.df <- readRDS(paste0(resultFolder, '/derivative.df', elementnum, '_CV', CVthr,'.rds'))
 #### source function
 source(paste0(functionFolder, '/gamderivatives.R'))
-source(paste0(functionFolder, "/SCrankcorr_beforegam.R"))
+source(paste0(functionFolder, "/SCrankcorr.R"))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 perm.id.full<-readRDS(paste0("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA", ds.resolution, "_sphericalrotations_N10000.rds"))
 

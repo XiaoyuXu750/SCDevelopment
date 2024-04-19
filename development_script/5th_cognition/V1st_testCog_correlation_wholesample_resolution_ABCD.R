@@ -17,7 +17,7 @@ if (str_detect(wdpath, "Users")){
   interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_ABCD'
   functionFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
   FigureFolder<-paste0('/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_ABCD_final/SA', ds.resolution,'/CV', CVthr)
-  source(paste0(functionFolder, "/SCrankcorr_beforegam.R"))
+  source(paste0(functionFolder, "/SCrankcorr.R"))
   perm.id.full<-readRDS(paste0("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA", ds.resolution,"_sphericalrotations_N10000.rds"))
   source(paste0(functionFolder, '/colorbarvalue.R'))
 }else if (str_detect(wdpath, "cuizaixu_lab")){

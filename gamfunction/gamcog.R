@@ -6,6 +6,7 @@ library(ecostats)
 
 #### Fit the linear effects of a continuous variable with a smooth item as covariates ####
 ## Function to fit evaluate the linear effects of a continuous variable on dependent variables per edge.
+## Modifications were made based on Sydnor, et al. https://github.com/PennLINC/spatiotemp_dev_plasticity/blob/main/gam_models/GAM_functions.R
 gam.fit.cognition <- function(region, dataname, cognition_var, smooth_var, covariates, knots,corrmethod, set_fx = FALSE, stats_only = FALSE){
   
   #Fit the gam

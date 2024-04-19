@@ -33,7 +33,7 @@ CVthr = 75
 derivative.posterior.df <- readRDS(paste0(resultFolder, '/derivative.posterior.df.SA', ds.resolution, '_CV', CVthr,'.rds'))
 derivative.df <- readRDS(paste0(resultFolder, '/derivative.df', elementnum, '_CV', CVthr,'.rds'))
 #### source function
-source(paste0(functionFolder, "/SCrankcorr_beforegam.R"))
+source(paste0(functionFolder, "/SCrankcorr.R"))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 perm.id.full<-readRDS(paste0("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA", ds.resolution, "_sphericalrotations_N10000.rds"))
 #### calculate SC rank in ds.resolution*ds.resolution

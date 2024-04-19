@@ -1,7 +1,6 @@
-## This script is to fit interaction models between ADHD and HC.
-## Both age and cognition are defined as the variable of interest.
-## Gamm models were used to regress covariables.
-## Comorbidity is not considered.
+## This script is to fit mediation models 
+## (p-factor --> SC --> cognition).
+
 library(mgcv)
 library(parallel)
 library(tidyverse)
@@ -170,20 +169,5 @@ med.2year$M.var[med.2year$indirect.P < 0.05] # 5 edges sig, before fdr.
 SCrank.med <- SCrankcorr(med.2year, "indirect.Z", 12, perm.id.full, dsdata=FALSE)
 #   ds.resolution Interest.var r.spearman p.spin
 # 1            12   indirect.Z -0.2827407 0.134175
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

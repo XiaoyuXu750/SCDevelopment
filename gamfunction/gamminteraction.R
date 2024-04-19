@@ -34,7 +34,7 @@ pboot <- function(modelobj, int_var=NA){
   return(int_pval)
 }
 
-#### PREDICT GAM SMOOTH FITTED VALUES FOR A SPECIFIED VALUE OF AN INTERACTING COVARIATE ####
+#### PREDICT GAMM SMOOTH FITTED VALUES FOR A SPECIFIED VALUE OF AN INTERACTING COVARIATE ####
 ## continuous interaction covariate
 ##Function to predict fitted values of a region for a given value of a covariate, using a varying coefficients smooth-by-linear covariate interaction
 gamm.smooth.predict.covariateinteraction <- function(region, dataname, smooth_var, int_var, int_var.predict.percentile, covariates, knots, set_fx = FALSE, increments, stats_only=TRUE){

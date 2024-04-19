@@ -31,7 +31,7 @@ if (CVthr==75){
 summary(meanlength)
 #### source function
 source(paste0(functionFolder, '/gamderivatives.R'))
-source(paste0(functionFolder, "/SCrankcorr_beforegam.R"))
+source(paste0(functionFolder, "/SCrankcorr.R"))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 perm.id.full<-readRDS("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA12_sphericalrotations_N10000.rds")
 

@@ -26,7 +26,7 @@ gamresult$pfdr <- p.adjust(gamresult$bootstrap_pvalue, method="fdr")
 SCdata <- readRDS(paste0(interfileFolder, '/SCdata_SA', ds.resolution, '_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.combatage.rds'))
 perm.id.full<-readRDS(paste0("/Users/xuxiaoyu_work/Cuilab/GeneralRfunctions/rotate_parcellation/SA", ds.resolution, "_sphericalrotations_N10000.rds"))
 #### source function
-source(paste0(functionFolder, '/SCrankcorr_beforegam.R'))
+source(paste0(functionFolder, '/SCrankcorr.R'))
 source(paste0(functionFolder, '/colorbarvalue.R'))
 
 #### 1. calculate correlation to SC rank

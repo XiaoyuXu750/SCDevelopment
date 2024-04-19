@@ -7,6 +7,7 @@ library(ecostats)
 #### PREDICT GAM SMOOTH FITTED VALUES FOR A SPECIFIED VALUE OF AN INTERACTING COVARIATE ####
 ## continuous interaction covariate
 ##Function to predict fitted values of a region for a given value of a covariate, using a varying coefficients smooth-by-linear covariate interaction
+##Modifications were made based on Sydnor, et al. https://github.com/PennLINC/spatiotemp_dev_plasticity/blob/main/gam_models/GAM_functions.R
 gam.smooth.predict.covariateinteraction <- function(region, dataname, smooth_var, int_var, int_var.predict.percentile, covariates, knots, set_fx = FALSE, increments, stats_only=TRUE){
   #Fit the gam
   gam.data <- get(dataname)
