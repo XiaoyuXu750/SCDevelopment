@@ -1,0 +1,266 @@
+---
+title: "S2nd_fitgammodels_SA12sumSCinvnode_ageseperate_HCPD"
+author: "Xiaoyu xu"
+date: "5/16/2024"
+output: html_document
+---
+This script is to fit gam models for each edge in sub-datasets separated at the flip age (15.5 years).Statistical indices and gam model files will be generated. Fig. 3(E,F)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mgcv)
+library(parallel)
+library(tidyverse)
+library(reshape)
+library(RColorBrewer)
+rm(list=ls())
+CVthr = 75
+wdpath <- getwd()
+if (str_detect(wdpath, "Users")){
+  resultFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_HCPD'
+  interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_HCPD'
+  functionFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
+  FigureFolder<-paste0('/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCPD_final/SA12/CV', CVthr)
+  source(paste0(functionFolder, "/SCrankcorr.R"))
+  source(paste0(functionFolder, '/colorbarvalue.R'))
+  
+}else if (str_detect(wdpath, "cuizaixu_lab")){
+  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/interdataFolder_HCPD'
+  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/Rcode_SCdevelopment/gamfunction'
+  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/results_HCPD'
+}
+```
+
+## 1. prepare data
+
+```{r prep_data}
+SCdata <- readRDS(paste0(interfileFolder, '/SCdata_SA12_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.merge.rds'))
+SCdata.sum.merge<-readRDS(paste0(interfileFolder, "/SCdata.diw_SA12CV", CVthr, ".rds"))
+summary(SCdata.sum.merge$age)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 8.083  11.500  14.500  14.746  17.875  21.917 
+nrow(SCdata.sum.merge)
+sepage <- 15.51927
+SCdata.sum.merge_younger <- SCdata.sum.merge[SCdata.sum.merge$age<sepage,]#n=355
+SCdata.sum.merge_older <- SCdata.sum.merge[SCdata.sum.merge$age>=sepage,]#n=235
+SCdata.younger <- SCdata[SCdata$age<sepage,]
+SCdata.older <- SCdata[SCdata$age>=sepage,]
+
+#### source function
+source(paste0(functionFolder, '/gamsmooth.R'))
+detectCores()
+```
+
+## 2. Fit GAM
+
+```{r gam}
+covariates<-"sex+mean_fd"
+smooth_var<-"age"
+
+## younger 8~agesep
+dataname<-"SCdata.sum.merge_younger"
+if (str_detect(wdpath, "cuizaixu_lab")){
+  resultsum <- mclapply(1:78, function(x){
+    SClabel<-names(SCdata.sum.merge)[1+x]
+    region<-SClabel
+    gamresult<-gam.fit.smooth(region, dataname, smooth_var, covariates, knots=3, set_fx=T, stats_only = FALSE, mod_only=FALSE)
+    gamresult<-as.data.frame(gamresult)
+    return(gamresult)
+  }, mc.cores = 50)
+  gamresultsum.df_younger <- do.call(rbind, lapply(resultsum, function(x) data.frame(x)))
+  gamresultsum.df_younger[,c(2:18)]<-lapply(gamresultsum.df_younger[,c(2:18)], as.numeric)
+  saveRDS(gamresultsum.df_younger, paste0(interfileFolder, '/gamresults78_sumSCinvnode_over8_CV', CVthr, '_young.rds'))
+}else{
+  gamresultsum.df_younger <- readRDS(paste0(interfileFolder, '/gamresults78_sumSCinvnode_over8_CV', CVthr, '_young.rds'))}
+SCrankcorr(gamresultsum.df_younger, "partialRsq", 12,  dsdata=FALSE)
+
+
+## gam models
+if (str_detect(wdpath, "cuizaixu_lab")){
+  resultsum <- mclapply(1:78, function(x){
+    SClabel<-names(SCdata.sum.merge)[1+x]
+    region<-SClabel
+    gamresult<-gam.fit.smooth(region, dataname, smooth_var, covariates, knots=3, set_fx=T, stats_only = TRUE, mod_only=TRUE)
+    return(gamresult)
+  }, mc.cores = 50)
+  saveRDS(resultsum, paste0(interfileFolder, '/gammodel78_sumSCinvnode_over8_CV',CVthr, '_younger.rds'))}
+
+## agesep~22
+dataname<-"SCdata.sum.merge_older"
+if (str_detect(wdpath, "cuizaixu_lab")){
+  resultsum <- mclapply(1:78, function(x){
+    SClabel<-names(SCdata.sum.merge)[1+x]
+    region<-SClabel
+    gamresult<-gam.fit.smooth(region, dataname, smooth_var, covariates, knots=3, set_fx=FALSE, stats_only = FALSE, mod_only=FALSE)
+    gamresult<-as.data.frame(gamresult)
+    return(gamresult)
+  }, mc.cores = 50)
+  gamresultsum.df_older <- do.call(rbind, lapply(resultsum, function(x) data.frame(x)))
+  gamresultsum.df_older[,c(2:18)]<-lapply(gamresultsum.df_older[,c(2:18)], as.numeric)
+  saveRDS(gamresultsum.df_older, paste0(interfileFolder, '/gamresults78_sumSCinvnode_over8_CV', CVthr, '_old.rds'))
+  
+}else{
+  gamresultsum.df_older <- readRDS(paste0(interfileFolder, '/gamresults78_sumSCinvnode_over8_CV', CVthr, '_old.rds'))
+}
+SCrankcorr(gamresultsum.df_older, "partialRsq", 12,  dsdata=FALSE)
+
+## gam models
+if (str_detect(wdpath, "cuizaixu_lab")){
+  resultsum <- mclapply(1:78, function(x){
+    SClabel<-names(SCdata.sum.merge)[1+x]
+    region<-SClabel
+    if (sum(SCdata.sum.merge[,x+1])==0){
+      gamresult<-list("NA")
+    }else{
+      gamresult<-gam.fit.smooth(region, dataname, smooth_var, covariates, knots=3, set_fx=T, stats_only = TRUE, mod_only=TRUE)
+    }
+    return(gamresult)
+  }, mc.cores = 50)
+  saveRDS(resultsum, paste0(interfileFolder, '/gammodel78_sumSCinvnode_over8_CV',CVthr, '_older.rds'))}
+
+```
+
+## 2. Scatter & matrix plots for younger group
+Fig. 3E
+```{r scatter_plots_young}
+## younger
+ds.resolution <- 12
+## partial Rsq
+gamresultsum.df_younger <- within(gamresultsum.df_younger, {
+  partialRsq1 <- partialRsq
+  partialRsq1[partialRsq1 > mean(partialRsq1) + 3*sd(partialRsq1) | partialRsq1 < mean(partialRsq1) - 3*sd(partialRsq1)] <- NA
+})
+computevar <- "partialRsq1"
+correlation.df <- SCrankcorr(gamresultsum.df_younger, computevar, ds.resolution, dsdata=TRUE)
+SCrankcorr(gamresultsum.df_younger, computevar, ds.resolution, dsdata=FALSE)
+summary(gamresultsum.df_younger$partialRsq1)
+mtrixplot <- matrix(NA, ds.resolution, ds.resolution)
+mtrixplot[lower.tri(mtrixplot, diag = T)] <- gamresultsum.df_younger$partialRsq1
+maxthr <- max(abs(gamresultsum.df_younger$partialRsq1), na.rm=T)
+ggplot(data=correlation.df)+
+  geom_point(aes(x=SCrank, y=partialRsq1, color=partialRsq1), size=3)+
+  geom_smooth(aes(x=SCrank, y=partialRsq1), method ="lm", color="black")+
+  scale_color_distiller(type="seq", palette = "RdBu", direction = -1, limits=c(-maxthr, maxthr))+
+  labs(x="S-A connectional axis rank", y=NULL)+
+  #scale_y_continuous(breaks = c(0.0030, 0.0060, 0.0090, 0.012))+
+  theme_classic()+
+  theme(axis.text=element_text(size=15, color="black"), 
+        axis.title =element_text(size=15),aspect.ratio = 0.8,
+        plot.title = element_text(size=20, hjust = 0.5, vjust=2),
+        axis.line = element_line(linewidth = 0.4),axis.ticks = element_line(linewidth = 0.4),
+        plot.background=element_rect(fill="transparent"),
+        panel.background=element_rect(fill="transparent"), legend.position = "none")
+ggsave(paste0(FigureFolder, '/correlation_sumSCinvnode_SCrank_younger/', computevar, '_SCrankcorr_n', ds.resolution, '.tiff'), width=17, height =14, units = "cm")
+ggsave(paste0(FigureFolder, '/correlation_sumSCinvnode_SCrank_younger/', computevar, '_SCrankcorr_n', ds.resolution, '.svg'), dpi=600, width=10, height =8, units = "cm")
+
+## matrix plot
+computevar <- "partialRsq"
+Matrix.tmp <- matrix(NA, nrow = 12, ncol=12)
+linerange_frame<-data.frame(x=c(0.5,12+0.5), ymin =rep(-12-0.5, times=2), ymax =rep(-0.5, times=2),
+                            y=c(-0.5, -12-0.5), xmin=rep(0.5, times=2), xmax=rep(12+0.5, times=2))
+Matrix.tmp <- mtrixplot
+Matrix.tmp[upper.tri(Matrix.tmp)] <- t(Matrix.tmp)[upper.tri(Matrix.tmp)]
+colnames(Matrix.tmp) <-seq(1, 12)
+rownames(Matrix.tmp) <-seq(1, 12)
+matrixtmp.df <- as.data.frame(Matrix.tmp)
+matrixtmp.df$nodeid <- seq(1, 12)
+matrixtmp.df.melt <- melt(matrixtmp.df,id.vars=c("nodeid"))
+matrixtmp.df.melt$variable<-as.numeric(matrixtmp.df.melt$variable)
+matrixtmp.df.melt$nodeid<-0-matrixtmp.df.melt$nodeid
+matrixtmp.df.melt$value<-as.numeric(matrixtmp.df.melt$value)
+RdBucol <- rev(brewer.pal(11, "RdBu"))
+ggplot(data =matrixtmp.df.melt)+
+  geom_tile(aes(x=variable, y=nodeid, fill = value, color=value))+
+  scale_fill_distiller(type="seq", palette = "RdBu",limits=c(-maxthr, maxthr), na.value = RdBucol[11])+
+  scale_color_distiller(type="seq", palette = "RdBu",limits=c(-maxthr, maxthr), na.value = RdBucol[11])+
+  #geom_text(data =matrixtmp.df.sig.melt, aes(x=variable, y=nodeid, label = "*"), vjust = 0.7, hjust = 0.5, size=9)+
+  geom_linerange(data=linerange_frame, aes(y=y, xmin =xmin, xmax =xmax), color="black", linewidth=0.5)+
+  geom_linerange(data=linerange_frame, aes(x=x, ymin =ymin, ymax =ymax), color="black", linewidth=0.5)+
+  geom_segment(aes(x = 0.5 , y = -0.5 , xend = 12+0.5 ,yend = -12-0.5), color="black", linewidth=0.5)+
+  ggtitle(label = computevar)+labs(x=NULL, y=NULL)+
+  scale_y_continuous(breaks=NULL, labels = NULL)+
+  scale_x_continuous(breaks=NULL, labels = NULL)+
+  theme(axis.line = element_blank(), 
+        #axis.ticks=element_line(linewidth = 0),
+        axis.text.x=element_text(size=12, angle=45, hjust=1), 
+        axis.text.y=element_text(size=12, angle=315, hjust=1,vjust=1),
+        axis.title =element_text(size=18),
+        plot.title = element_text(size=18, hjust = 0.5),
+        legend.title=element_text(size=18),
+        legend.text=element_text(size=18), 
+        panel.background=element_rect(fill=NA),
+        panel.grid.major=element_line(linewidth = 0), 
+        panel.grid.minor=element_line(linewidth = 1))
+filename<-paste0(FigureFolder,"/Matrix12_sumSCinvnode_gamstats_younger/", computevar, "_12net_delLM_CV", CVthr,".tiff")
+ggsave(filename, height = 18, width = 20, units = "cm")
+
+```
+
+## 3. Scatter & matrix plots for older group
+Fig. 3F
+```{r scatter_plots_old}
+## scatter plots
+############################################
+ds.resolution <- 12
+## partial Rsq
+computevar <- "partialRsq"
+correlation.df <- SCrankcorr(gamresultsum.df_older, computevar, ds.resolution, dsdata=TRUE)
+summary(gamresultsum.df_younger$partialRsq)
+mtrixplot <- matrix(NA, ds.resolution, ds.resolution)
+mtrixplot[lower.tri(mtrixplot, diag = T)] <- correlation.df$partialRsq
+maxthr <- max(abs(correlation.df$partialRsq), na.rm=T)
+ggplot(data=correlation.df)+
+  geom_point(aes(x=SCrank, y=partialRsq, color=partialRsq), size=3)+
+  geom_smooth(aes(x=SCrank, y=partialRsq), method ="lm", color="black")+
+  scale_color_distiller(type="seq", palette = "RdBu", direction = -1, limits=c(-maxthr, maxthr))+
+  labs(x="S-A connectional axis rank", y=NULL)+
+  scale_y_continuous(breaks = c(0.00, 0.02, 0.04))+
+  theme_classic()+
+  theme(axis.text=element_text(size=15, color="black"), 
+        axis.title =element_text(size=15),aspect.ratio = 0.8,
+        plot.title = element_text(size=20, hjust = 0.5, vjust=2),
+        axis.line = element_line(linewidth = 0.4),axis.ticks = element_line(linewidth = 0.4),
+        plot.background=element_rect(fill="transparent"),
+        panel.background=element_rect(fill="transparent"), legend.position = "none")
+ggsave(paste0(FigureFolder, '/correlation_sumSCinvnode_SCrank_older/', computevar, '_SCrankcorr_n', ds.resolution, '.tiff'), width=17, height =14, units = "cm")
+ggsave(paste0(FigureFolder, '/correlation_sumSCinvnode_SCrank_older/', computevar, '_SCrankcorr_n', ds.resolution, '.svg'), dpi=600, width=10, height =8, units = "cm")
+# matrix plot
+computevar <- "partialRsq"
+Matrix.tmp <- matrix(NA, nrow = 12, ncol=12)
+linerange_frame<-data.frame(x=c(0.5,12+0.5), ymin =rep(-12-0.5, times=2), ymax =rep(-0.5, times=2),
+                            y=c(-0.5, -12-0.5), xmin=rep(0.5, times=2), xmax=rep(12+0.5, times=2))
+Matrix.tmp[lower.tri(Matrix.tmp, diag = T)] <- correlation.df[,2]
+Matrix.tmp[upper.tri(Matrix.tmp)] <- t(Matrix.tmp)[upper.tri(Matrix.tmp)]
+colnames(Matrix.tmp) <-seq(1, 12)
+rownames(Matrix.tmp) <-seq(1, 12)
+matrixtmp.df <- as.data.frame(Matrix.tmp)
+matrixtmp.df$nodeid <- seq(1, 12)
+matrixtmp.df.melt <- melt(matrixtmp.df,id.vars=c("nodeid"))
+matrixtmp.df.melt$variable<-as.numeric(matrixtmp.df.melt$variable)
+matrixtmp.df.melt$nodeid<-0-matrixtmp.df.melt$nodeid
+matrixtmp.df.melt$value<-as.numeric(matrixtmp.df.melt$value)
+
+ggplot(data =matrixtmp.df.melt)+
+  geom_tile(aes(x=variable, y=nodeid, fill = value, color=value))+
+  scale_fill_distiller(type="seq", palette = "RdBu",limits=c(-maxthr, maxthr), na.value = "grey")+
+  scale_color_distiller(type="seq", palette = "RdBu",limits=c(-maxthr, maxthr), na.value = "grey")+
+  geom_linerange(data=linerange_frame, aes(y=y, xmin =xmin, xmax =xmax), color="black", linewidth=0.5)+
+  geom_linerange(data=linerange_frame, aes(x=x, ymin =ymin, ymax =ymax), color="black", linewidth=0.5)+
+  geom_segment(aes(x = 0.5 , y = -0.5 , xend = 12+0.5 ,yend = -12-0.5), color="black", linewidth=0.5)+
+  ggtitle(label = computevar)+labs(x=NULL, y=NULL)+
+  scale_y_continuous(breaks=NULL, labels = NULL)+
+  scale_x_continuous(breaks=NULL, labels = NULL)+
+  theme(axis.line = element_blank(), 
+        #axis.ticks=element_line(linewidth = 0),
+        axis.text.x=element_text(size=12, angle=45, hjust=1), 
+        axis.text.y=element_text(size=12, angle=315, hjust=1,vjust=1),
+        axis.title =element_text(size=18),
+        plot.title = element_text(size=18, hjust = 0.5),
+        legend.title=element_text(size=18),
+        legend.text=element_text(size=18), 
+        panel.background=element_rect(fill=NA),
+        panel.grid.major=element_line(linewidth = 0), 
+        panel.grid.minor=element_line(linewidth = 1))
+filename<-paste0(FigureFolder,"/Matrix12_sumSCinvnode_gamstats_older/", computevar, "_12net_delLM_CV", CVthr,".tiff")
+ggsave(filename, height = 18, width = 20, units = "cm")
+
+```
