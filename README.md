@@ -1,9 +1,6 @@
 # SCDevelopment
 Data and codes for our paper "Structural connectivity matures along a sensorimotor-association connectional axis in youth".
 
-<<<<<<< HEAD
-Most codes were written in R, and a few in Matlab. The origin data for these analyses are available via the NIMH Data Archive (NDA),  [the Adolescent Brain Cognitive Development, (ABCD)](https://nda.nih.gov/abcd), [the Lifespan Human Connectome Project in Development (HCP-D)](https://nda.nih.gov/ccf)
-=======
 Most codes were written in R, and a few in Matlab. The original data for these analyses are available via the NIMH Data Archive (NDA),  [the Adolescent Brain Cognitive Development, (ABCD)]([https://nda.nih.gov/abcd](https://nda.nih.gov/abcd)), [the Lifespan Human Connectome Project in Development (HCP-D)](https://nda.nih.gov/ccf)
 >>>>>>> 6599fc5 (SC development)
 
