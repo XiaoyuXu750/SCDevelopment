@@ -2,7 +2,6 @@
 Data and codes for our paper "Structural connectivity matures along a sensorimotor-association connectional axis in youth".
 
 Most codes were written in R, and a few in Matlab. The original data for these analyses are available via the NIMH Data Archive (NDA),  [the Adolescent Brain Cognitive Development, (ABCD)]([https://nda.nih.gov/abcd](https://nda.nih.gov/abcd)), [the Lifespan Human Connectome Project in Development (HCP-D)](https://nda.nih.gov/ccf)
->>>>>>> 6599fc5 (SC development)
 
 ## demopath
 This folder contains the demographic, cognitive, and psychopathological characteristics of the participants in the ABCD and HCP-D datasets. `DemodfScreenFinal.csv` is for the ABCD dataset. `HCPD_demo_behav.csv` is for the HCP-D dataset. The codes for organizing these dataframes are located in `/development_script/1st_dataclean/merge_demography_info_and_screen`.
@@ -28,9 +27,7 @@ See the `README` in each folder for details of individual scripts.
 
 ## gamfunction
 This folder contains functions called in the analyses. The functions called in the scripts in the `development_script` folder can be found here.
-<<<<<<< HEAD
 
 ## GeneralRfunctions
 This folder contains the functions for spin tests from https://github.com/frantisekvasa/rotate_parcellation.
-=======
->>>>>>> 6599fc5 (SC development)
+
