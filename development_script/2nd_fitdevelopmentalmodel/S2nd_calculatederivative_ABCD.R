@@ -1,5 +1,5 @@
 ## This script is to generate derivative and posterior derivative values from GAMM models.
-## Age will be sampled from 8.9 to 13.5, with a total of 1000 data points. 
+## Age will be sampled from 8.9 to 13.8, with a total of 1000 data points. 
 ## Covariates will be set as median or mode.
 ## The predicted derivatives will be generated.
 ## The data will be used to draw developmental trajectories and analyse the developmental alignment.

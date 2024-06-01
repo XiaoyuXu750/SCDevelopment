@@ -1,7 +1,7 @@
 ## Sensitivity analysis: additional covariate.
 #### This script is to conduct correlation analysis 
 #### between gam statistical indexes to S-A connectional axis rank.
-#### And draw scatter plots & matrix graphs. Fig. S11/ S12
+#### And draw scatter plots & matrix graphs. Fig. S10 & S11
 library(R.matlab)
 library(tidyverse)
 library(parallel)

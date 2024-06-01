@@ -168,7 +168,7 @@ pre code {
 </div>
 
 
-<p>This script is to conduct correlation analysis between gam statistical indexes to connectional axis rank in ABCD dataset. And draw scatter plots &amp; matrix graphs. Fig. S6 (A~D); Fig. S7 (A~B) Spearman correlations were conducted.</p>
+<p>This script is to conduct correlation analysis between gam statistical indexes to connectional axis rank in ABCD dataset. And draw scatter plots &amp; matrix graphs. Fig. S6 (A~D) Spearman correlations were conducted.</p>
 <div id="load-data" class="section level2">
 <h2>1. load data</h2>
 <pre class="r"><code>#### load data
@@ -218,7 +218,7 @@ SCrankcorr(gamresult, &quot;meanderv2_control_distance&quot;, 12, dsdata=FALSE)<
 </div>
 <div id="scatter-plots" class="section level2">
 <h2>3. scatter plots</h2>
-<p>Fig. S6 (B, D); Fig. S7 (C, D)</p>
+<p>Fig. S6 (B, D)</p>
 <pre class="r"><code>ds.resolution &lt;- 12
 
 ## partial Rsq
@@ -231,25 +231,15 @@ summary(gamresult$partialRsq2)</code></pre>
 mtrixplot[lower.tri(mtrixplot, diag = T)] &lt;- correlation.df$partialRsq2
 prob_partialRsq &lt;- abs(min(correlation.df$partialRsq2, na.rm = T)) / (max(correlation.df$partialRsq2, na.rm = T)-min(correlation.df$partialRsq2, na.rm = T))
 colorbarvalues.Rsq &lt;- colorbarvalues(correlation.df$partialRsq2, prob_partialRsq)
-if (CVthr == 75){
-  mytheme &lt;- theme(axis.text=element_text(size=24.3, color=&quot;black&quot;), 
+
+mytheme &lt;- theme(axis.text=element_text(size=24.3, color=&quot;black&quot;), 
                    axis.title =element_text(size=24.3),aspect.ratio = 0.8,
                    axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
                    plot.title = element_text(size=20, hjust = 0.5, vjust=2),
                    plot.background=element_rect(fill=&quot;transparent&quot;),
                    panel.background=element_rect(fill=&quot;transparent&quot;),
                    legend.position = &quot;none&quot;)
-  mywidth = 17.5; myheight = 15
-}else{
-  mytheme &lt;- theme(axis.text=element_text(size=21.2, color=&quot;black&quot;), 
-        axis.title =element_text(size=21.2),aspect.ratio = 0.82,
-        axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
-        plot.title = element_text(size=20, hjust = 0.5, vjust=2),
-        plot.background=element_rect(fill=&quot;transparent&quot;),
-        panel.background=element_rect(fill=&quot;transparent&quot;),
-        legend.position = &quot;none&quot;)
-  mywidth = 17.5; myheight = 15
-}
+mywidth = 17.5; myheight = 15
 
 lmthr &lt;- max(abs(correlation.df$partialRsq2), na.rm=T)
 ggplot(data=correlation.df)+
@@ -286,17 +276,7 @@ mtrixplot[lower.tri(mtrixplot, diag = T)] &lt;- correlation.df$meanderv2
 prob_meanderv2 &lt;- abs(min(correlation.df$meanderv)) / (max(correlation.df$meanderv)-min(correlation.df$meanderv))
 colorbarvalues.meanderv2 &lt;- colorbarvalues(correlation.df$meanderv2, prob_meanderv2)
 
-if (CVthr==25){
-  mytheme &lt;- theme(axis.text=element_text(size=21.5, color=&quot;black&quot;), 
-        axis.title =element_text(size=21.5),aspect.ratio = 0.75,
-        axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
-        plot.title = element_text(size=20, hjust = 0.5, vjust=2),
-        plot.background=element_rect(fill=&quot;transparent&quot;),
-        panel.background=element_rect(fill=&quot;transparent&quot;),
-        legend.position = &quot;none&quot;)
-  mywidth =17; myheight = 14
-}else{
-  mytheme &lt;- theme(axis.text=element_text(size=26.4, color=&quot;black&quot;), 
+mytheme &lt;- theme(axis.text=element_text(size=26.4, color=&quot;black&quot;), 
                    axis.title =element_text(size=26.4),aspect.ratio = 0.74,
                    axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
                    plot.title = element_text(size=20, hjust = 0.5, vjust=2),
@@ -304,7 +284,6 @@ if (CVthr==25){
                    panel.background=element_rect(fill=&quot;transparent&quot;),
                    legend.position = &quot;none&quot;)
   mywidth = 17.5; myheight = 15
-}
 
 ggplot(data=correlation.df)+
   geom_point(aes(x=SCrank, y=meanderv2, color=meanderv2), size=5)+
@@ -419,7 +398,7 @@ for (computevar in computevarlist){
 </div>
 <div id="plot-for-the-condition-regressed-out-mean-fiber-distance" class="section level2">
 <h2>4. Plot for the condition regressed out mean fiber distance</h2>
-<p>Fig. S10 (C, D)</p>
+<p>Fig. S9 (C, D)</p>
 <pre class="r"><code>## partial Rsq
 computevar &lt;- &quot;partialRsq_control_distance&quot;
 correlation.df &lt;- SCrankcorr(gamresult, computevar, ds.resolution,dsdata=TRUE)

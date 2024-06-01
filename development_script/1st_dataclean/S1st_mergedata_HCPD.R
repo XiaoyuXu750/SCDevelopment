@@ -96,13 +96,6 @@ meanSC[deleteindex.delLM] <-0
 saveRDS(SCdata.sum.merge, paste0(interfileFolder, '/SCdata.sum.CV75.merge.SAorder.delLMover8.rds'))
 saveRDS(deleteindex.delLM, paste0(interfileFolder, '/CV75_deleteindex.SAorder.delLMover8.rds'))
 
-# Validation Threshold = 25th CV
-deleteindex.delLM.25 <- which(CV.SC>Perct.CV.SC[2])
-SCdata.sum.merge.CV25 <- SCdata.sum.merge
-SCdata.sum.merge.CV25[,deleteindex.delLM.25+1] <-0
-meanSC.CV25 <- meanSC; meanSC.CV25[deleteindex.delLM.25] <-0
-saveRDS(SCdata.sum.merge.CV25, paste0(interfileFolder, '/SCdata.sum.CV25.merge.SAorder.delLMover8.rds'))
-saveRDS(deleteindex.delLM.25, paste0(interfileFolder, '/CV25_deleteindex.SAorder.delLMover8.rds'))
 ########################################################################
 
 ### plot matrix
@@ -127,25 +120,6 @@ tiff(
 image(log(Matrix.376), col=rev(COL2(diverging = "RdBu", n=200)), axes = FALSE)
 dev.off()
 
-## 25 th threshold
-Matrix.376.25 <- matrix(NA, nrow=Matsize, ncol =Matsize)
-indexup <- upper.tri(Matrix.376.25)
-indexsave <- !indexup ###keep lower triangle and diagonal
-index <- as.numeric(meanSC.CV25)
-Matrix.376.25[indexsave] <- index
-Matrix.376.25[indexup] <- t(Matrix.376.25)[indexup]
-colnames(Matrix.376.25) <-seq(1, Matsize)
-rownames(Matrix.376.25) <-seq(1, Matsize)
-tiff( 
-  filename = paste0(FigureFolder, '/SCmatrix/SClog376_CV25.tiff'),
-  width = 600, 
-  height = 600,
-  units = "px",
-  bg = "white",
-  res = 100)
-image(log(Matrix.376.25), col=rev(COL2(diverging = "RdBu", n=200)), axes = FALSE)
-dev.off()
-
 # sparcity
 sparcity <- rep(0, nrow(SCdata.sum.merge))
 sparcity.df<-mclapply(1:nrow(SCdata.sum.merge), function(i){
@@ -160,24 +134,3 @@ summary(sparcity.df); sd(sparcity.df)
 # 0.4228  0.6651  0.6810  0.6754  0.6929  0.7188 
 # sd = 0.02742583
 
-## threshold CV25
-sparcity <- rep(0, nrow(SCdata.sum.merge.CV25))
-sparcity.df<-mclapply(1:nrow(SCdata.sum.merge.CV25), function(i){
-  SCmat.tmp <- SCdata.sum.merge.CV25[i,2:70877]
-  nover0 <- length(which(SCmat.tmp>0))
-  sparcity<-nover0/70876
-  return(sparcity)
-}, mc.cores=4)
-sparcity.df <- unlist(sparcity.df)
-summary(sparcity.df); sd(sparcity.df)
-#  Min.   1st Qu.  Median  Mean   3rd Qu.  Max. 
-# 0.1929  0.2476  0.2485  0.2476  0.2489  0.2496 
-# sd = 0.003927831
-
-## output
-#1. SCdata.sum.msmtcsd.delLMover8.rds : schaefer 376 regions were reordered in accordance with S-A axis.
-# 70876 variables+subID * observations
-#2. SCdata.sum.msmtcsd.merge.rds : 70876 variables + behavior variables + subID * obs
-#3. CV75_deleteindex.SAorder.delLMover8.rds : index of SC with CV over P75th, 24 limbic regions were deleted.
-#4. SCdata.sum.CV75.merge.SAorder.delLMover8.rds : 70876 variables + behavior variables + subID * obs
-# 24 limbic regions were deleted, participants under 8 years old were deleted.

@@ -1,7 +1,7 @@
 ## Validation: covariates SES / ICV
 #### This script is to conduct correlation analysis 
 #### between gam statistical indexes to S-A connectional axis rank.
-#### And draw scatter plots & matrix graphs. Supplementary Figure 7 & 8.
+#### And draw scatter plots & matrix graphs. Fig. S10 & S11.
 library(R.matlab)
 library(tidyverse)
 library(parallel)

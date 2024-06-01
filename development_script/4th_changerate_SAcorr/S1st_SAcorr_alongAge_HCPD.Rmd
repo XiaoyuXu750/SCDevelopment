@@ -6,7 +6,7 @@ output: html_document
 ---
 
 This script conducted age-resolved developmental analysis. Spearman correlation coefficients between derivatives / posterior derivatives and S-A connectional axis rank will be calculated at 1,000 age points within age spans.
-Figure 3 A~D, Supplementary Figure S7 B.
+Figure 3 A~D.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
@@ -109,8 +109,8 @@ age.0.corr.diw.median <- median(age.0.corr.diw) #median age #bayes
 age.0.corr.diw.CI <- quantile(age.0.corr.diw, probs = c(0.025, 0.975)) #compute the credible interval based on all draws
 age.0.corr.diw.lower <- age.0.corr.diw.CI[[1]]
 age.0.corr.diw.upper <- age.0.corr.diw.CI[[2]]
-age.0.corr.diw.median # 15.5192 (CV75) ; 15.99007 (CV25)
-age.0.corr.diw.CI # 15.29771 15.79621 (CV75) ; 15.71313 16.33660 (CV25)
+age.0.corr.diw.median # 15.5192 (CV75)
+age.0.corr.diw.CI # 15.29771 15.79621 (CV75)
 #### median corr and 95% CI
 # diw
 posterior.corr.diw.median <- lapply(c(1:1000), function(x) median(round(deri.SCrank.posterior.corr[,x],4)))
@@ -133,27 +133,17 @@ df.poscorr.diw$median.loess <- loess.median$fitted
 df.poscorr.diw$lw.95CI.loess <- loess.lw$fitted
 df.poscorr.diw$up.95CI.loess <- loess.up$fitted
 print("Fig. 3B")
-if (CVthr==25){
-  mytheme <- theme(axis.text=element_text(size=20.5, color="black"), 
-        axis.title =element_text(size=20.5),
-        axis.line = element_line(linewidth = 0.5),
-        aspect.ratio =0.93,
-        plot.background=element_rect(fill="transparent"),
-        panel.background=element_rect(fill="transparent"),
-        legend.title=element_text(size=15),
-        legend.text=element_text(size=15))
-  mywidth <- myheight <-15
-}else{
-  mytheme <- theme(axis.text=element_text(size=21, color="black"), 
-        axis.title =element_text(size=21),
-        axis.line = element_line(linewidth = 0.5),
-        aspect.ratio =0.78,
-        plot.background=element_rect(fill="transparent"),
-        panel.background=element_rect(fill="transparent"),
-        legend.title=element_text(size=15),
-        legend.text=element_text(size=15))
-  mywidth <- 17.5; myheight <-15
-}
+
+mytheme <- theme(axis.text=element_text(size=21, color="black"), 
+                 axis.title =element_text(size=21),
+                 axis.line = element_line(linewidth = 0.5),
+                 aspect.ratio =0.78,
+                 plot.background=element_rect(fill="transparent"),
+                 panel.background=element_rect(fill="transparent"),
+                 legend.title=element_text(size=15),
+                 legend.text=element_text(size=15))
+mywidth <- 17.5; myheight <-15
+
 ggplot(data=df.poscorr.diw)+
   geom_ribbon(aes(x=age, ymin=lw.95CI.loess, ymax=up.95CI.loess), alpha=0.3)+
   geom_line(aes(x=age, y=median.loess), linewidth=1.5)+

@@ -103,13 +103,6 @@ meanSC[deleteindex.delLM] <-0
 saveRDS(SCdata.sum.merge, paste0(interfileFolder, '/SCdata.sum.CV75.merge.SAorder.delLM.rds'))
 saveRDS(deleteindex.delLM, paste0(interfileFolder, '/CV75_deleteindex.SAorder.delLM.rds'))
 
-# Validation Threshold = 25th CV
-deleteindex.delLM.25 <- which(CV.SC>Perct.CV.SC[2])
-SCdata.sum.merge.CV25 <- SCdata.sum.merge
-SCdata.sum.merge.CV25[,deleteindex.delLM.25+1] <-0
-meanSC.CV25 <- meanSC; meanSC.CV25[deleteindex.delLM.25] <-0
-saveRDS(SCdata.sum.merge.CV25, paste0(interfileFolder, '/SCdata.sum.CV25.merge.SAorder.delLM.rds'))
-saveRDS(deleteindex.delLM.25, paste0(interfileFolder, '/CV25_deleteindex.SAorder.delLM.rds'))
 ########################################################################
 
 ## plot
@@ -135,21 +128,6 @@ tiff(
 image(log(Matrix.376), col=rev(COL2(diverging = "RdBu", n=200)), axes = FALSE)
 dev.off()
 
-# CV25
-index <- as.numeric(meanSC25)
-Matrix.376[indexsave] <- index
-Matrix.376[indexup] <- t(Matrix.376)[indexup]
-colnames(Matrix.376) <-seq(1, Matsize)
-rownames(Matrix.376) <-seq(1, Matsize)
-tiff( 
-  filename = paste0(FigureFolder, '/SCmatrix/SClog376_CV25.tiff'),
-  width = 600, 
-  height = 600,
-  units = "px",
-  bg = "white",
-  res = 100)
-image(log(Matrix.376), col=rev(COL2(diverging = "RdBu", n=200)), axes = FALSE)
-dev.off()
 
 # sparcity
 sparcity <- rep(0, nrow(SCdata.sum.merge))
@@ -164,24 +142,4 @@ summary(sparcity.df); sd(sparcity.df)
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 # 0.08687 0.55373 0.59869 0.58916 0.63423 0.71385 
 # sd=0.0617236
-## threshold CV25
-sparcity <- rep(0, nrow(SCdata.sum.merge.CV25))
-sparcity.df<-mclapply(1:nrow(SCdata.sum.merge.CV25), function(i){
-  SCmat.tmp <- SCdata.sum.merge.CV25[i,2:70877]
-  nover0 <- length(which(SCmat.tmp>0))
-  sparcity<-nover0/70876
-  return(sparcity)
-}, mc.cores=4)
-sparcity.df <- unlist(sparcity.df)
-summary(sparcity.df); sd(sparcity.df)
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 0.05048 0.23250 0.24050 0.23640 0.24461 0.24907
-# sd=0.01253735
 
-## output
-#1. SCdata.sum.msmtcsd.delLM.rds : schaefer 376 regions were reordered in accordance with S-A axis.
-# 70876 variables+scanID *  observations
-#2. SCdata.sum.msmtcsd.merge.rds : 70876 variables + behavior variables + scanID * obs
-#3. CV75_deleteindex.SAorder.delLM.rds : index of SC with CV over P75th, 24 limbic regions were deleted.
-#4. SCdata.sum.CV75.merge.SAorder.delLMover8.rds : 70876 variables + behavior variables + scanID * obs
-# edges connecting to 24 limbic regions were deleted.

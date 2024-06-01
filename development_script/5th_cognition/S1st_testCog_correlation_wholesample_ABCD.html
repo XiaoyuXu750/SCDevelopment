@@ -168,70 +168,11 @@ pre code {
 </div>
 
 
-<p>This script is to calculate associations between fluid cognition and SC strength in the ABCD dataset. GAM models were used to regress covariates. Statistical indices will be generated. Fig. 4(B, C), Fig. S7(E), Fig. S10(E)</p>
+<p>This script is to calculate associations between fluid cognition and SC strength in the ABCD dataset. GAM models were used to regress covariates. Statistical indices will be generated. Fig. 4(B, C), Fig. S9(E)</p>
 <div id="cognition-association" class="section level2">
 <h2>1. Cognition association</h2>
 <p>Fluid cognition is only measured at baseline, GAM model was used</p>
-<pre class="r"><code>EFvars &lt;- c(&quot;nihtbx_list_uncorrected&quot;, &quot;nihtbx_cardsort_uncorrected&quot;, &quot;nihtbx_flanker_uncorrected&quot;)
-SCdata.EF &lt;- SCdata[,c(&quot;scanID&quot;, EFvars)]
-corr.test(SCdata.EF[,2:4])</code></pre>
-<pre><code>## Call:corr.test(x = SCdata.EF[, 2:4])
-## Correlation matrix 
-##                             nihtbx_list_uncorrected nihtbx_cardsort_uncorrected
-## nihtbx_list_uncorrected                        1.00                        0.30
-## nihtbx_cardsort_uncorrected                    0.30                        1.00
-## nihtbx_flanker_uncorrected                     0.27                        0.45
-##                             nihtbx_flanker_uncorrected
-## nihtbx_list_uncorrected                           0.27
-## nihtbx_cardsort_uncorrected                       0.45
-## nihtbx_flanker_uncorrected                        1.00
-## Sample Size 
-##                             nihtbx_list_uncorrected nihtbx_cardsort_uncorrected
-## nihtbx_list_uncorrected                        3870                        3869
-## nihtbx_cardsort_uncorrected                    3869                        3870
-## nihtbx_flanker_uncorrected                     3869                        3869
-##                             nihtbx_flanker_uncorrected
-## nihtbx_list_uncorrected                           3869
-## nihtbx_cardsort_uncorrected                       3869
-## nihtbx_flanker_uncorrected                        3870
-## Probability values (Entries above the diagonal are adjusted for multiple tests.) 
-##                             nihtbx_list_uncorrected nihtbx_cardsort_uncorrected
-## nihtbx_list_uncorrected                           0                           0
-## nihtbx_cardsort_uncorrected                       0                           0
-## nihtbx_flanker_uncorrected                        0                           0
-##                             nihtbx_flanker_uncorrected
-## nihtbx_list_uncorrected                              0
-## nihtbx_cardsort_uncorrected                          0
-## nihtbx_flanker_uncorrected                           0
-## 
-##  To see confidence intervals of the correlations, print with the short=FALSE option</code></pre>
-<pre class="r"><code>EFPCA &lt;- principal(SCdata.EF[,2:4], nfactors = 3, rotate = &quot;none&quot;)
-print(EFPCA) # PC1 can explain 56% variance</code></pre>
-<pre><code>## Principal Components Analysis
-## Call: principal(r = SCdata.EF[, 2:4], nfactors = 3, rotate = &quot;none&quot;)
-## Standardized loadings (pattern matrix) based upon correlation matrix
-##                              PC1   PC2   PC3 h2      u2 com
-## nihtbx_list_uncorrected     0.66  0.75  0.07  1 0.0e+00 2.0
-## nihtbx_cardsort_uncorrected 0.80 -0.25 -0.54  1 7.8e-16 2.0
-## nihtbx_flanker_uncorrected  0.78 -0.38  0.50  1 5.6e-16 2.2
-## 
-##                        PC1  PC2  PC3
-## SS loadings           1.69 0.76 0.55
-## Proportion Var        0.56 0.25 0.18
-## Cumulative Var        0.56 0.82 1.00
-## Proportion Explained  0.56 0.25 0.18
-## Cumulative Proportion 0.56 0.82 1.00
-## 
-## Mean item complexity =  2.1
-## Test of the hypothesis that 3 components are sufficient.
-## 
-## The root mean square of the residuals (RMSR) is  0 
-##  with the empirical chi square  0  with prob &lt;  NA 
-## 
-## Fit based upon off diagonal values = 1</code></pre>
-<pre class="r"><code>SCdata$EFPCA &lt;- EFPCA$scores[,1]
-SCdata$EF3add &lt;- rowSums(SCdata[,EFvars])
-Cogvar &lt;- &quot;nihtbx_fluidcomp_uncorrected&quot;
+<pre class="r"><code>Cogvar &lt;- &quot;nihtbx_fluidcomp_uncorrected&quot;
 
 summary(SCdata[,Cogvar])</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
@@ -322,8 +263,8 @@ SCrankresult.whole.controllength</code></pre>
 <pre class="r"><code>print(paste(&quot;Correlation coefficient between cognitve associations regressing out Euclidean distance and connectional axis is&quot;, round(SCrankresult.whole.controllength$r.spearman,2), &quot;with a P value of&quot;, round(SCrankresult.whole.controllength$p.spearman,3)))</code></pre>
 <pre><code>## [1] &quot;Correlation coefficient between cognitve associations regressing out Euclidean distance and connectional axis is -0.19 with a P value of 0.091&quot;</code></pre>
 </div>
-<div id="plot-scatter-plotmatrix-graph-fig.-4b-c-fig.-s7e-fig.-s10e" class="section level2">
-<h2>2. Plot: scatter plot+matrix graph, Fig. 4(B, C), Fig. S7(E), Fig. S10(E)</h2>
+<div id="plot-scatter-plotmatrix-graph-fig.-4b-c-fig.-s9e" class="section level2">
+<h2>2. Plot: scatter plot+matrix graph, Fig. 4(B, C), Fig. S9(E)</h2>
 <pre class="r"><code>correlation.df &lt;- SCrankcorr(SC_Cog_results.df, &quot;gam.smooth.t&quot;, 12,dsdata=TRUE)
 correlation.df$sig &lt;- (SC_Cog_results.df$anova.cov.p.fdr&lt;0.05)
 Matrix.tmp &lt;- matrix(NA, nrow = 12, ncol=12)
@@ -343,15 +284,6 @@ if (CVthr==75){
         panel.background=element_rect(fill=&quot;transparent&quot;),plot.margin = margin(t=10,r=5,b=5,l=5, unit=&quot;pt&quot;),
         legend.position = &quot;none&quot;)
   width = height = 16.5
-}else{
-  mytheme&lt;-theme(axis.text=element_text(size=23, color=&quot;black&quot;), 
-        axis.title =element_text(size=23),aspect.ratio = 0.82,
-        axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
-        plot.title = element_text(size=20, hjust = 0.5, vjust=2),
-        plot.background=element_rect(fill=&quot;transparent&quot;),
-        panel.background=element_rect(fill=&quot;transparent&quot;),
-        legend.position = &quot;none&quot;)
-  width =17.5; height = 15
 }
 
 Fig &lt;- ggplot(data=SC_Cog_results.tmp)+

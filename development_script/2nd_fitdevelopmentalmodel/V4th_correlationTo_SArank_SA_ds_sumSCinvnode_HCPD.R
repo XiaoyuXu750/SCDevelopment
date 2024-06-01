@@ -1,7 +1,7 @@
 ## Validation: large-scale matrix of 17 or 7
 #### This script is to conduct correlation analysis 
 #### between gam statistical indexes to S-A connectional axis rank.
-#### And draw scatter plots & matrix graphs. Supplementary Figure 4.
+#### And draw scatter plots & matrix graphs. Fig. S7, S8.
 library(R.matlab)
 library(tidyverse)
 library(parallel)

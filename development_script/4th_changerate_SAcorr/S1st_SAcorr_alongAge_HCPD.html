@@ -168,7 +168,7 @@ pre code {
 </div>
 
 
-<p>This script conducted age-resolved developmental analysis. Spearman correlation coefficients between derivatives / posterior derivatives and S-A connectional axis rank will be calculated at 1,000 age points within age spans. Figure 3 A~D, Supplementary Figure S7 B.</p>
+<p>This script conducted age-resolved developmental analysis. Spearman correlation coefficients between derivatives / posterior derivatives and S-A connectional axis rank will be calculated at 1,000 age points within age spans. Figure 3 A~D.</p>
 <div id="calculate-correlation-between-posterior-derivatives-and-s-a-connectional-axis" class="section level2">
 <h2>1. calculate correlation between posterior derivatives and S-A connectional axis</h2>
 <pre class="r"><code>deri.SCrank.posterior.diw.corr &lt;- data.frame(matrix(NA, 1000, 1000))
@@ -221,9 +221,9 @@ age.0.corr.diw.median &lt;- median(age.0.corr.diw) #median age #bayes
 age.0.corr.diw.CI &lt;- quantile(age.0.corr.diw, probs = c(0.025, 0.975)) #compute the credible interval based on all draws
 age.0.corr.diw.lower &lt;- age.0.corr.diw.CI[[1]]
 age.0.corr.diw.upper &lt;- age.0.corr.diw.CI[[2]]
-age.0.corr.diw.median # 15.5192 (CV75) ; 15.99007 (CV25)</code></pre>
+age.0.corr.diw.median # 15.5192 (CV75)</code></pre>
 <pre><code>## [1] 15.51927</code></pre>
-<pre class="r"><code>age.0.corr.diw.CI # 15.29771 15.79621 (CV75) ; 15.71313 16.33660 (CV25)</code></pre>
+<pre class="r"><code>age.0.corr.diw.CI # 15.29771 15.79621 (CV75)</code></pre>
 <pre><code>##     2.5%    97.5% 
 ## 15.29771 15.79621</code></pre>
 <pre class="r"><code>#### median corr and 95% CI
@@ -249,27 +249,16 @@ df.poscorr.diw$lw.95CI.loess &lt;- loess.lw$fitted
 df.poscorr.diw$up.95CI.loess &lt;- loess.up$fitted
 print(&quot;Fig. 3B&quot;)</code></pre>
 <pre><code>## [1] &quot;Fig. 3B&quot;</code></pre>
-<pre class="r"><code>if (CVthr==25){
-  mytheme &lt;- theme(axis.text=element_text(size=20.5, color=&quot;black&quot;), 
-        axis.title =element_text(size=20.5),
-        axis.line = element_line(linewidth = 0.5),
-        aspect.ratio =0.93,
-        plot.background=element_rect(fill=&quot;transparent&quot;),
-        panel.background=element_rect(fill=&quot;transparent&quot;),
-        legend.title=element_text(size=15),
-        legend.text=element_text(size=15))
-  mywidth &lt;- myheight &lt;-15
-}else{
-  mytheme &lt;- theme(axis.text=element_text(size=21, color=&quot;black&quot;), 
-        axis.title =element_text(size=21),
-        axis.line = element_line(linewidth = 0.5),
-        aspect.ratio =0.78,
-        plot.background=element_rect(fill=&quot;transparent&quot;),
-        panel.background=element_rect(fill=&quot;transparent&quot;),
-        legend.title=element_text(size=15),
-        legend.text=element_text(size=15))
-  mywidth &lt;- 17.5; myheight &lt;-15
-}
+<pre class="r"><code>mytheme &lt;- theme(axis.text=element_text(size=21, color=&quot;black&quot;), 
+                 axis.title =element_text(size=21),
+                 axis.line = element_line(linewidth = 0.5),
+                 aspect.ratio =0.78,
+                 plot.background=element_rect(fill=&quot;transparent&quot;),
+                 panel.background=element_rect(fill=&quot;transparent&quot;),
+                 legend.title=element_text(size=15),
+                 legend.text=element_text(size=15))
+mywidth &lt;- 17.5; myheight &lt;-15
+
 ggplot(data=df.poscorr.diw)+
   geom_ribbon(aes(x=age, ymin=lw.95CI.loess, ymax=up.95CI.loess), alpha=0.3)+
   geom_line(aes(x=age, y=median.loess), linewidth=1.5)+

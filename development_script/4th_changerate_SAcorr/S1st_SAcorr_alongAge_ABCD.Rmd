@@ -124,26 +124,14 @@ loess.up <- loess(up.95CI~age, data=df.poscorr.diw, span=0.2)
 df.poscorr.diw$median.loess <- loess.median$fitted
 df.poscorr.diw$lw.95CI.loess <- loess.lw$fitted
 df.poscorr.diw$up.95CI.loess <- loess.up$fitted
-if (CVthr==25){
-  mytheme <-  theme(axis.text=element_text(size=24, color="black"), 
-        axis.title =element_text(size=24),
-        plot.title = element_text(size=15, hjust = 0.5),
-        axis.line = element_line(linewidth = 0.55),
-        axis.ticks = element_line(linewidth = 0.55),
-        aspect.ratio =1.15,
-        plot.background=element_rect(fill="transparent"),
-        panel.background=element_rect(fill="transparent"),plot.margin = margin(t=10, r=0, b=0, l=0),
-        legend.title=element_text(size=15),
-        legend.text=element_text(size=15))
-}else{
-  mytheme <-  theme(axis.text=element_text(size=24.4, color="black"), 
-                   axis.title =element_text(size=24.4),aspect.ratio = 1.1,
-                   axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
-                   plot.title = element_text(size=20, hjust = 0.5, vjust=2),
-                   plot.background=element_rect(fill="transparent"),
-                   panel.background=element_rect(fill="transparent"),
-                   legend.position = "none")
-}
+
+mytheme <-  theme(axis.text=element_text(size=24.4, color="black"), 
+                  axis.title =element_text(size=24.4),aspect.ratio = 1.1,
+                  axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
+                  plot.title = element_text(size=20, hjust = 0.5, vjust=2),
+                  plot.background=element_rect(fill="transparent"),
+                  panel.background=element_rect(fill="transparent"),
+                  legend.position = "none")
 
 ggplot(data=df.poscorr.diw)+
   geom_ribbon(aes(x=age, ymin=lw.95CI.loess, ymax=up.95CI.loess), alpha=0.3)+
@@ -174,7 +162,6 @@ df.age8 <- df.age8[-1,]
 
 SCrankcorr(df.age8, "derivative", 12) 
 
-df.poscorr.diw$age[which.min(abs(df.poscorr.diw$median-0))]
 ntmp<-which.min(abs(agerange-max(agerange))) 
 agerange[ntmp]
 df.age13 <-as.data.frame(matrix(NA, nrow=1, ncol=9))

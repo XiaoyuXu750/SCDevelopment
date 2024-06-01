@@ -39,9 +39,8 @@ schaefer400_index_SA <- schaefer400_index_SA[order(schaefer400_index_SA$finalran
 schaefer400_index<-schaefer400_index_SA[order(schaefer400_index_SA$index),]
 # orderSA_7.SA: the order index of SA axis in schaefer400_index
 orderSA_7.SA<-order(schaefer400_index$finalrank.wholebrainrank)
-# filter index of P75th and P25th of CV.
+# filter index of P75th of CV.
 deleteindex75 <- readRDS(paste0(interfileFolder, '/CV75_deleteindex.SAorder.delLMover8.rds'))
-deleteindex25 <- readRDS(paste0(interfileFolder, '/CV25_deleteindex.SAorder.delLMover8.rds'))
 
 # delete limbic region and extract S-A order index
 # limbicindex: limbic region index in schaefer400_index
@@ -87,8 +86,8 @@ for (i in 1:elementnum){
 SCdata.sum<- data.frame(t(rep(0,elementnum)))
 names(SCdata.sum)<-colname
 SCdata.sum$subID <- "NULL"
-SCdata.sum75 <- SCdata.sum25 <- SCdata.sum
-SCdata.sum75_noInvNode <- SCdata.sum25_noInvNode <- SCdata.sum
+SCdata.sum75 <- SCdata.sum
+SCdata.sum75_noInvNode <- SCdata.sum
 
 # length
 colname2 <- character(length = elementnum)
@@ -99,7 +98,7 @@ for (i in 1:elementnum){
 SClength.sum<- data.frame(t(rep(0,elementnum)))
 names(SClength.sum)<-colname2
 SClength.sum$subID <- "NULL"
-SClength.sum75 <- SClength.sum25 <- SClength.sum
+SClength.sum75 <- SClength.sum
 for (i in 1:nrow(Behavior)){
   subID <- Behavior$subID[i]
   SCname <- paste0(subID, '_space-T1w_desc-preproc_msmtconnectome.mat')
@@ -116,29 +115,22 @@ for (i in 1:nrow(Behavior)){
     indexup <- upper.tri(SCmat_raw)
     indexsave <- !indexup
     SCmat_raw <- SCmat_raw[indexsave] # 1*70876 each element represents streamline counts
-    SCmat_raw75 <- SCmat_raw25 <- SCmat_raw
+    SCmat_raw75 <- SCmat_raw
     SCmat_raw75[deleteindex75]<-0 # remove top 1/4 inconsistent connetions
-    SCmat_raw25[deleteindex25]<-0 # remove top 3/4 inconsistent connetions
     totallength_raw <- totallength_raw[indexsave]
-    totallength_raw75 <- totallength_raw25 <- totallength_raw
+    totallength_raw75 <- totallength_raw
     totallength_raw75[deleteindex75]<-0
-    totallength_raw25[deleteindex25]<-0
     df <- data.frame(
       group = SAds.resolution,
       value75 = SCmat_raw75,
-      value25 = SCmat_raw25,
-      length75 = totallength_raw75,
-      length25 = totallength_raw25
+      length75 = totallength_raw75
     )
     # compute the sum of streamline counts / length for each fraction, in total of elementnum.
     result <- df %>%
       group_by(group) %>%
-      summarise(sum_value75 = sum(value75), sum_value25 = sum(value25), sum_length75=sum(length75), 
-                sum_length25=sum(length25))
+      summarise(sum_value75 = sum(value75), sum_length75=sum(length75))
     mean_length75 <- result$sum_length75 / result$sum_value75
-    mean_length25 <- result$sum_length25 / result$sum_value25
     sumSC.raw75 <- result$sum_value75[1:elementnum]
-    sumSC.raw25 <- result$sum_value25[1:elementnum]
     ## node volume
     nodevolume <- read_table(volumefile, col_names=F)
     nodevolume <- as.numeric(nodevolume$X1[orderSA_7.delLM]) # sort as SA-axis without limbic
@@ -160,7 +152,6 @@ for (i in 1:nrow(Behavior)){
     }
     volumeSC <- volumeSC[lower.tri(volumeSC, diag = T)] # the scale values of node volume for each edge.
     sumSC.invnode75 <- sumSC.raw75 / volumeSC
-    sumSC.invnode25 <- sumSC.raw25 / volumeSC
     
     SCdat75 <- as.data.frame(sumSC.invnode75)
     SCdat75 <- as.data.frame(t(SCdat75), row.names = NULL)
@@ -176,60 +167,30 @@ for (i in 1:nrow(Behavior)){
     SCdat75_noinvnode$subID[1] <- subID
     SCdata.sum75_noInvNode <- rbind(SCdata.sum75_noInvNode, SCdat75_noinvnode)
     
-    SCdat25 <- as.data.frame(sumSC.invnode25)
-    SCdat25 <- as.data.frame(t(SCdat25), row.names = NULL)
-    names(SCdat25) <- colname
-    row.names(SCdat25) <- NULL
-    SCdat25$subID[1] <- subID
-    SCdata.sum25<-rbind(SCdata.sum25, SCdat25)
-    
-    SCdat25_noinvnode <- as.data.frame(sumSC.raw25)
-    SCdat25_noinvnode <- as.data.frame(t(SCdat25_noinvnode), row.names = NULL)
-    names(SCdat25_noinvnode) <- colname
-    row.names(SCdat25_noinvnode) <- NULL
-    SCdat25_noinvnode$subID[1] <- subID
-    SCdata.sum25_noInvNode <- rbind(SCdata.sum25_noInvNode, SCdat25_noinvnode)
-    
     mean_length75 <- as.data.frame(t(mean_length75))
     names(mean_length75) <- colname2
     mean_length75$subID[1] <- subID
     SClength.sum75 <- rbind(SClength.sum75, mean_length75)
-    
-    mean_length25 <- as.data.frame(t(mean_length25))
-    names(mean_length25) <- colname2
-    mean_length25$subID[1] <- subID
-    SClength.sum25 <- rbind(SClength.sum25, mean_length25)
   }
 }
 SCdata.sum75<-SCdata.sum75[-1,]
-SCdata.sum25<-SCdata.sum25[-1,]
 SCdata.sum75_noInvNode <- SCdata.sum75_noInvNode[-1,]
-SCdata.sum25_noInvNode <- SCdata.sum25_noInvNode[-1,]
 SClength.sum75 <- SClength.sum75[-1,]
-SClength.sum25 <- SClength.sum25[-1,]
 SCdata.sum75.merge <- merge(SCdata.sum75, Behavior, by="subID")
-SCdata.sum25.merge <- merge(SCdata.sum25, Behavior, by="subID")
 SCdata.sum75.merge <- merge(SCdata.sum75.merge, SClength.sum75, by="subID")
-SCdata.sum25.merge <- merge(SCdata.sum25.merge, SClength.sum25, by="subID")
 
 SCdata.sum75_noInvNode.merge <- merge(SCdata.sum75_noInvNode, Behavior, by="subID")
-SCdata.sum25_noInvNode.merge <- merge(SCdata.sum25_noInvNode, Behavior, by="subID")
 # exclude subjects with big head motion
 mean(SCdata.sum75.merge$mean_fd)+3*sd(SCdata.sum75.merge$mean_fd) #1.438502
 SCdata.sum75.merge <- SCdata.sum75.merge[SCdata.sum75.merge$mean_fd<1.44, ] #14 subjects were excluded
-SCdata.sum25.merge <- SCdata.sum25.merge[SCdata.sum25.merge$mean_fd<1.44, ] #14 subjects were excluded
 SCdata.sum75_noInvNode.merge <- SCdata.sum75_noInvNode.merge[SCdata.sum75_noInvNode.merge$mean_fd<1.44, ] #14 subjects were excluded
-SCdata.sum25_noInvNode.merge <- SCdata.sum25_noInvNode.merge[SCdata.sum25_noInvNode.merge$mean_fd<1.44, ] #14 subjects were excluded
 
 saveRDS(SCdata.sum75.merge, paste0(interfileFolder, '/SCdata_SA', ds.resolution, '_CV75_sumSCinvnode.sum.msmtcsd.merge.rds'))
-saveRDS(SCdata.sum25.merge, paste0(interfileFolder, '/SCdata_SA', ds.resolution,'_CV25_sumSCinvnode.sum.msmtcsd.merge.rds'))
 saveRDS(SCdata.sum75_noInvNode.merge, paste0(interfileFolder, '/SCdata_SA', ds.resolution, '_CV75_sumSC.sum.msmtcsd.merge.rds'))
-saveRDS(SCdata.sum25_noInvNode.merge, paste0(interfileFolder, '/SCdata_SA', ds.resolution,'_CV25_sumSC.sum.msmtcsd.merge.rds'))
 
 ### plot matrix
 #ds.resolution
 meanSC.75<-colMeans(SCdata.sum75.merge[,2:(elementnum+1)])
-meanSC.25<-colMeans(SCdata.sum25.merge[,2:(elementnum+1)])
 Matsize<-ds.resolution
 Matrix.ds.resolution <- matrix(NA, nrow=Matsize, ncol =Matsize)
 indexup <- upper.tri(Matrix.ds.resolution)
@@ -250,22 +211,5 @@ tiff(
 image(Matrix.ds.resolution, col=rev(COL2(diverging = "RdBu", n=200)), axes = TRUE)
 dev.off()
 
-# sparcity
-sparcity <- rep(0, nrow(SCdata.sum25.merge))
-sparcity.df<-mclapply(1:nrow(SCdata.sum25.merge), function(i){
-  SCmat.tmp <- SCdata.sum25.merge[i,2:(elementnum+1)]
-  nover0 <- length(which(SCmat.tmp>0))
-  sparcity<-nover0/elementnum
-  return(sparcity)
-}, mc.cores=4)
-sparcity.df <- unlist(sparcity.df)
-summary(sparcity.df)
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 1       1       1       1       1       1 
-
-
-## output
-#1. SCdata_SA'ds.resolution'_CV75_sumSCinvnode.sum.msmtcsd.merge.rds : elementnum variables + behavior variables + subID * obs
-# elementnum edges connect ds.resolution fractions of cortical regions. Edge weights are the connectivity scales by the node volumes.
 
 

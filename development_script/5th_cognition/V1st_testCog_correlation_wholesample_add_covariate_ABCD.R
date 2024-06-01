@@ -39,7 +39,7 @@ summary(SCdata[,Cogvar])
 table(SCdata$eventname[!is.na(SCdata[,Cogvar])])
 nonna_index<-which(!is.na(SCdata[ ,Cogvar]))
 SCdata.cog<-SCdata[nonna_index,]
-SCdata.cog <- SCdata.cog[SCdata.cog$eventname=="baseline_year_1_arm_1",] #n=3836
+SCdata.cog <- SCdata.cog[SCdata.cog$eventname=="baseline_year_1_arm_1",]
 table(SCdata.cog$siteID)
 
 dataname<-"SCdata.cog"
