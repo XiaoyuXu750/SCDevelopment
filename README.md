@@ -28,6 +28,3 @@ See the `README` in each folder for details of individual scripts.
 ## gamfunction
 This folder contains functions called in the analyses. The functions called in the scripts in the `development_script` folder can be found here.
 
-## GeneralRfunctions
-This folder contains the functions for spin tests from https://github.com/frantisekvasa/rotate_parcellation.
-
