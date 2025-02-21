@@ -1,10 +1,23 @@
 # SCDevelopment
-Data and codes for our paper "Structural connectivity matures along a sensorimotor-association connectional axis in youth".
+Data and codes for our paper "Mapping the spatiotemporal continuum of structural connectivity development across the human connectome in youth". 
+The original data for these analyses are available via the NIMH Data Archive (NDA),  [the Adolescent Brain Cognitive Development, (ABCD)](https://nda.nih.gov/abcd), [the Lifespan Human Connectome Project in Development (HCP-D)](https://nda.nih.gov/ccf), the Science Data Bank [the developmental component of the Chinese Color Nest Project, (devCCNP)](https://doi.org/10.57760/sciencedb.07478), and the [HBN-POD2](https://github.com/nrdg/HBN-POD2). Data of the YEN and SAND are not yet available, as collection is still ongoing.
 
-Most codes were written in R, and a few in Matlab. The original data for these analyses are available via the NIMH Data Archive (NDA),  [the Adolescent Brain Cognitive Development, (ABCD)]([https://nda.nih.gov/abcd](https://nda.nih.gov/abcd)), [the Lifespan Human Connectome Project in Development (HCP-D)](https://nda.nih.gov/ccf)
+## Software and system requirements
+### Diffusion & structural MRI preprocessing
+* FreeSurfer v7.1.1 (https://surfer.nmr.mgh.harvard.edu/)
+* QSIPrep 0.16.0 (https://qsiprep.readthedocs.io/)
+* OS: Linux
+
+### Postprocessing
+* Connectome Workbench v2.0.1 (https://www.humanconnectome.org/software/connectome-workbench)
+* R v4.1.0 (https://www.r-project.org)
+* MATLAB R2020a (https://www.mathworks.com/)
+* OS: Windows / Linux
+
+The system requirements and installation guide for each software can be found on its respective website.
 
 ## demopath
-This folder contains the demographic, cognitive, and psychopathological characteristics of the participants in the ABCD and HCP-D datasets. `DemodfScreenFinal.csv` is for the ABCD dataset. `HCPD_demo_behav.csv` is for the HCP-D dataset. The codes for organizing these dataframes are located in `/development_script/1st_dataclean/merge_demography_info_and_screen`.
+This folder contains the demographic, cognitive, and psychopathological characteristics of the participants in the ABCD and HCP-D datasets. `DemodfScreenFinal.csv` is for the ABCD dataset. `HCPD_demo_behav.csv` is for the HCP-D dataset. The codes for organizing these data frames are located in `/development_script/1st_dataclean/merge_demography_info_and_screen`.
 
 ## wd
 This folder contains statistical magnitudes, data for visualization and derivatives derived from the analyses. It has four sub-folders:
