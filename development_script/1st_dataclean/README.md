@@ -10,11 +10,8 @@ This script extracts the SC strength of large-scale SC matrices. A dataframe wil
 ## S3rd_combat_controlsite_*.R
 We conducted ComBat to harmonize the structural connectivity strength from multiple acquisition sites, referring to a code improved by Richard Beare [code](https://github.com/PennLINC/Larsen_IronDevelopment/blob/master/combat.R). ComBat was performed separately for observations included in developmental models (including covariates for age, sex, and head motion), cognitive models (including covariates for fluid cognition, age, sex, and head motion), and p-factor models (including covariates for p-factor, age, sex, and head motion).
 
-## S4th_plotSCdata_SA12_separateage_HCPD.R
-This script plots the average structural connectivity matrices of 12\*12 at specific ages. The average matrix is used in `Fig. S4D`.
-
-## S5th_demodescrip_plot.R
-This script generates the age distribution plots for the final samples from the ABCD and HCP-D datasets. The age distribution plots are presented in `fig. S1A,B`. In addition, we used this script to describe demographic and behavioral informations for the two datasets as shown in `table S1, S2`.
+## S4th_demodescrip_plot.R
+This script generates the age distribution plots for the final samples from the ABCD and HCP-D datasets. The age distribution plots are presented in `Fig. 1`. In addition, we used this script to describe demographic and behavioral informations for the two datasets as shown in `table S1–S4`.
 
 # merge_demography_info_and_screen
 This folder contains codes for organizing demographic, cognitive, and psychopathologic variables and screening data for the HCP-D and ABCD datasets.
