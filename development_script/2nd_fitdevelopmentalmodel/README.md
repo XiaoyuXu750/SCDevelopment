@@ -22,9 +22,6 @@ This script conducts Spearman correlation analyses between developmental paramet
 `V4th_correlationTo_SArank_SA_ds_sumSCinvnode_*.R` are scripts for sensitivity analyses of different SC network resolutions.
 `V4th_correlationTo_SArank_control_covariates_sumSCinvnode_*.R` are scripts for sensitivity analyses with additional covariates.
 
-## V1st_check_k.R
-This script was utilized to select the optimal (k) values for the smoothing functions in GAM and GAMM. We tested (k) values ranging from 3 to 6, and observed that models with a (k) value of 3 consistently exhibited the lowest Akaike Information Criterion (AIC), indicating optimal fit. Consequently, we confirmed the optimality of k=3 for age smooth term in both GAM and GAMM.
-
 ## computeEuclidistance.R
 Compute Euclidean distance between pairwise systems in 12x12 matrix.
 
