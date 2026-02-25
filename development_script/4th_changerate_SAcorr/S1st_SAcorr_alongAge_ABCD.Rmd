@@ -23,10 +23,10 @@ rm(list = ls())
 wdpath <- getwd()
 CVthr = 75
 if (str_detect(wdpath, "cuizaixu_lab")){
-  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/interdataFolder_ABCD'
-  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/Rcode_SCdevelopment/gamfunction'
-  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/results_ABCD'
-  
+  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/interdataFolder_ABCD'
+  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/Rcode_SCdevelopment/gamfunction'
+  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/results_ABCD'
+  FigureFolder<- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/Figure_ABCD_final/SA12'
 }else{
   resultFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/results_ABCD'
   interfileFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_ABCD'
@@ -176,7 +176,7 @@ df.age13 <- df.age13[-1,]
 SCrankcorr(df.age13, "derivative", 12) 
 
 
-## display 3 lines in one plot, Fig. S6F.
+## display 2 lines in one plot
 df.agemerge <- rbind(df.age8, df.age13)
 df.agemerge$age <- as.factor(df.agemerge$age)
 ggplot(data=df.agemerge)+

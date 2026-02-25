@@ -29,15 +29,10 @@ FigureFolder<-'D:/xuxiaoyu/DMRI_network_development/SC_development/Figure_ABCD_f
 ```{r load_data}
 #### load data
 CVthr = 75
-gamresult<-readRDS(paste0(interfileFolder, '/gamresults78_sumSCinvnode_over8_siteall_CV', CVthr,'_scale_TRUE.rds'))
+gamresult<-readRDS(paste0(interfileFolder, '/gamresults78_sumSCinvnode_over8_CV', CVthr,'_scale_TRUE.rds'))
 gamresult$pfdr <- p.adjust(gamresult$bootstrap_pvalue, method="fdr")
-sum(gamresult$pfdr < 0.05) #70 edges sig
-SCdata <- readRDS(paste0(interfileFolder, '/SCdata_SA12_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.combatage.rds'))
-meanSC <- colMeans(SCdata[,paste0("SC.", 1:78, "_h")], na.rm = T)
-EucDistance <- read.csv(paste0(interfileFolder, "/average_EuclideanDistance_12.csv"))
-#### description
-corr.test(meanSC, gamresult$partialRsq) # r=0.16, p=0.17
-boxplot(gamresult$partialRsq)
+sum(gamresult$pfdr < 0.05) #71 edges sig
+
 #### source function
 source(paste0(functionFolder, '/SCrankcorr.R'))
 source(paste0(functionFolder, '/colorbarvalue.R'))
@@ -57,14 +52,6 @@ computevar <- "meanderv2"
 SCrank_correlation <- rbind(SCrank_correlation, SCrankcorr(gamresult, computevar, ds.resolution, dsdata=FALSE))
 print(SCrank_correlation)
 
-# 1.1 control for Euclidean distance
-gamresult$EucDistance <- EucDistance$Edistance
-gamresult$partialRsq_control_distance[which(!is.na(gamresult$partialRsq2))] <- residuals(lm(partialRsq2~EucDistance, data=gamresult))
-#corr.test(gamresult$partialRsq_control_distance, gamresult$EucDistance, method = "pearson") # r=0
-SCrankcorr(gamresult, "partialRsq_control_distance", 12, dsdata=FALSE)
-gamresult$meanderv2_control_distance <- residuals(lm(meanderv2~EucDistance, data=gamresult))
-#corr.test(gamresult$meanderv2_control_distance, gamresult$EucDistance, method = "pearson") # r=0
-SCrankcorr(gamresult, "meanderv2_control_distance", 12, dsdata=FALSE)
 
 ```
 
@@ -80,7 +67,6 @@ summary(gamresult$partialRsq2)
 mtrixplot <- matrix(NA, ds.resolution, ds.resolution)
 mtrixplot[lower.tri(mtrixplot, diag = T)] <- correlation.df$partialRsq2
 prob_partialRsq <- abs(min(correlation.df$partialRsq2, na.rm = T)) / (max(correlation.df$partialRsq2, na.rm = T)-min(correlation.df$partialRsq2, na.rm = T))
-colorbarvalues.Rsq <- colorbarvalues(correlation.df$partialRsq2, prob_partialRsq)
 mytheme <- theme(axis.text=element_text(size=23, color="black"), 
         axis.title =element_text(size=23),aspect.ratio = 1,
         axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
@@ -109,7 +95,6 @@ summary(gamresult$meanderv2)
 mtrixplot <- matrix(NA, ds.resolution, ds.resolution)
 mtrixplot[lower.tri(mtrixplot, diag = T)] <- correlation.df$meanderv2
 prob_meanderv2 <- abs(min(correlation.df$meanderv)) / (max(correlation.df$meanderv)-min(correlation.df$meanderv))
-colorbarvalues.meanderv2 <- colorbarvalues(correlation.df$meanderv2, prob_meanderv2)
 
 
 mytheme <- theme(axis.text=element_text(size=25.5, color="black"), 
@@ -125,7 +110,7 @@ mywidth = 17.5; myheight = 15
 ggplot(data=correlation.df)+
   geom_point(aes(x=SCrank, y=meanderv2, color=meanderv2), size=5)+
   geom_smooth(aes(x=SCrank, y=meanderv2), method ="lm", color="black", linewidth=1.2)+
-  scale_color_distiller(type="seq", palette = "RdBu", direction = -1, values=colorbarvalues.meanderv2)+
+  scale_color_distiller(type="seq", palette = "RdBu", direction = -1, limits=c(-max(correlation.df$meanderv2), max(correlation.df$meanderv2)))+
   labs(x="S-A connectional axis rank", y="Second derivative")+
   #scale_y_continuous(breaks = c(-0.005,0,0.005,0.010), labels=c(-5,0,5,10))+
   theme_classic()+mytheme
@@ -136,18 +121,16 @@ ggsave(paste0(FigureFolder,'/CV', CVthr, '/correlation_sumSCinvnode_SCrank/mean'
 
 ```
 
-## 3. matrix graphs for resolution at 12
-Fig. S6 (A, C)
+## 4. matrix graphs for resolution at 12
+
 ```{r mat_graph, eval=FALSE}
 Matrix.tmp <- matrix(NA, nrow = 12, ncol=12)
 
 linerange_frame<-data.frame(x=c(0.5,12+0.5), ymin =rep(-12-0.5, times=2), ymax =rep(-0.5, times=2),
                             y=c(-0.5, -12-0.5), xmin=rep(0.5, times=2), xmax=rep(12+0.5, times=2))
 
-computevarlist <- c("partialRsq2", "meanderv2", "partialRsq_control_distance", "meanderv2_control_distance")
-prob_partialRsq_control_distance <- abs(min(gamresult$partialRsq_control_distance, na.rm = T)) / (max(gamresult$partialRsq_control_distance, na.rm = T)-min(gamresult$partialRsq_control_distance, na.rm = T))
-prob_meanderv2_control_distance <- abs(min(gamresult$meanderv2_control_distance, na.rm = T)) / (max(gamresult$meanderv2_control_distance, na.rm = T)-min(gamresult$meanderv2_control_distance, na.rm = T))
-colorprob <- c(prob_partialRsq, prob_meanderv2, prob_partialRsq_control_distance, prob_meanderv2_control_distance)
+computevarlist <- c("partialRsq2", "meanderv2")
+
 n=0
 for (computevar in computevarlist){
   SCrank_correlation.df<-SCrankcorr(gamresult, computevar, ds.resolution,dsdata=TRUE)
@@ -163,8 +146,7 @@ for (computevar in computevarlist){
   matrixtmp.df.melt$nodeid<-0-matrixtmp.df.melt$nodeid
   matrixtmp.df.melt$value<-as.numeric(matrixtmp.df.melt$value)
   n=n+1
-  colorbarvalues.tmp <- colorbarvalues(matrixtmp.df.melt$value, colorprob[n])
-  
+
   Matrix.tmp.sig <- matrix(NA, nrow = 12, ncol=12)
   Matrix.tmp.sig[lower.tri(Matrix.tmp.sig, diag = T)] <- (gamresult$pfdr<0.05)
   Matrix.tmp.sig[upper.tri(Matrix.tmp.sig)] <- t(Matrix.tmp.sig)[upper.tri(Matrix.tmp.sig)]
@@ -229,73 +211,12 @@ for (computevar in computevarlist){
     
   Fig
   filename<-paste0(FigureFolder,'/CV', CVthr, "/Matrix12_sumSCinvnode_gamstats_Age8_22/", computevar, "_delLM_CV", CVthr,"_siteall.tiff")
-  ggsave(filename, Fig,  height = 18, width = 20, units = "cm")
+  ggsave(filename, Fig,  height = 16, width = 18, units = "cm")
   
 }
 
 ```
 
-## 4. Plot for the condition regressed out mean fiber distance
 
-```{r plot_controldistance}
-## partial Rsq
-computevar <- "partialRsq_control_distance"
-correlation.df <- SCrankcorr(gamresult, computevar, ds.resolution,dsdata=TRUE)
-summary(gamresult$partialRsq_control_distance)
-mtrixplot <- matrix(NA, ds.resolution, ds.resolution)
-mtrixplot[lower.tri(mtrixplot, diag = T)] <- correlation.df$partialRsq_control_distance
-prob_partialRsq_control_distance <- abs(min(gamresult$partialRsq_control_distance, na.rm = T)) / (max(gamresult$partialRsq_control_distance, na.rm = T)-min(gamresult$partialRsq_control_distance, na.rm = T))
-colorbarvalues.Rsq <- colorbarvalues(correlation.df$partialRsq_control_distance, prob_partialRsq_control_distance)
-SCrank_correlation <- SCrankcorr(gamresult, computevar, ds.resolution, dsdata=FALSE)
-rho <- round(SCrank_correlation$r.spearman[1], 2)
-pspin <- round(SCrank_correlation$p.spearman[1], 3)
-ggplot(data=correlation.df)+
-  geom_point(aes(x=SCrank, y=partialRsq_control_distance, color=partialRsq_control_distance, size=0.5))+
-  geom_smooth(aes(x=SCrank, y=partialRsq_control_distance), method ="lm", color="black", linewidth=1.2)+
-  scale_color_distiller(type="seq", palette = "RdBu", direction = -1, values=colorbarvalues.Rsq)+
-  #scale_colour_gradientn(colours = RdBu2,values=colorbarvalues.Rsq, space="Lab")+
-  labs(x="S-A connectional axis rank", y=expression("Age effect (partial "*italic("R")^"2"*")"))+
-  #scale_y_continuous(breaks = c(0.0030, 0.0060, 0.0090, 0.012))+
-  theme_classic()+
-  theme(axis.text=element_text(size=22.5, color="black"), 
-        axis.title =element_text(size=22.5),aspect.ratio = 0.88,
-        axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
-        plot.title = element_text(size=20, hjust = 0.5, vjust=2),
-        plot.background=element_rect(fill="transparent"),
-        panel.background=element_rect(fill="transparent"),
-        legend.position = "none")
-ggsave(paste0(FigureFolder,'/CV', CVthr, '/correlation_sumSCinvnode_SCrank/mean', computevar, '_SCrankcorr_siteall.tiff'), width=16, height =15, units = "cm")
-ggsave(paste0(FigureFolder,'/CV', CVthr, '/correlation_sumSCinvnode_SCrank/mean', computevar, '_SCrankcorr_siteall.svg'), dpi=600, width=16, height =15, units = "cm")
-
-## meanderv2
-computevar <- "meanderv2_control_distance"
-correlation.df <- SCrankcorr(gamresult, computevar, ds.resolution,dsdata=TRUE)
-prob_meanderv2_control_distance <- abs(min(gamresult$meanderv2_control_distance, na.rm = T)) / (max(gamresult$meanderv2_control_distance, na.rm = T)-min(gamresult$meanderv2_control_distance, na.rm = T))
-summary(gamresult$partialRsq_control_distance)
-mtrixplot <- matrix(NA, ds.resolution, ds.resolution)
-mtrixplot[lower.tri(mtrixplot, diag = T)] <- correlation.df$meanderv2_control_distance
-colorbarvalues.meanderv2 <- colorbarvalues(correlation.df$meanderv2_control_distance, prob_meanderv2_control_distance)
-SCrank_correlation <- SCrankcorr(gamresult, computevar, ds.resolution, dsdata=FALSE)
-rho <- round(SCrank_correlation$r.spearman[1], 2)
-pspin <- round(SCrank_correlation$p.spearman[1], 3)
-ggplot(data=correlation.df)+
-  geom_point(aes(x=SCrank, y=meanderv2_control_distance, color=meanderv2_control_distance, size=0.5))+
-  geom_smooth(aes(x=SCrank, y=meanderv2_control_distance), method ="lm", color="black", linewidth=1.2)+
-  scale_color_distiller(type="seq", palette = "RdBu", direction = -1, values=colorbarvalues.meanderv2)+
-  scale_y_continuous(breaks = c(-0.005, 0, 0.005, 0.010), labels = c(-5,0,5, 10))+
-  #scale_colour_gradientn(colours = RdBu2,values=colorbarvalues.Rsq, space="Lab")+
-  labs(x="S-A connectional axis rank", y="Second derivative")+
-  theme_classic()+
-  theme(axis.text=element_text(size=23, color="black"), 
-        axis.title =element_text(size=23),aspect.ratio = 0.75,
-        axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
-        plot.title = element_text(size=20, hjust = 0.5, vjust=2),
-        plot.background=element_rect(fill="transparent"),
-        panel.background=element_rect(fill="transparent"),
-        legend.position = "none")
-ggsave(paste0(FigureFolder,'/CV', CVthr, '/correlation_sumSCinvnode_SCrank/mean', computevar, '_SCrankcorr_siteall.tiff'), width=16, height =14, units = "cm")
-ggsave(paste0(FigureFolder,'/CV', CVthr, '/correlation_sumSCinvnode_SCrank/mean', computevar, '_SCrankcorr_siteall.svg'), dpi=600, width=16, height =14, units = "cm")
-
-```
 
 

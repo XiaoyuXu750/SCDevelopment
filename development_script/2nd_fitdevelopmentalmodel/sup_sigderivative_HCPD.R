@@ -8,15 +8,14 @@ library(RColorBrewer)
 library(paletteer)
 rm(list = ls())
 
-resultFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_HCPD'
-interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_HCPD'
-functionFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
-FigureFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Figure_HCPD_final/SA12'
+resultFolder<-'D:/xuxiaoyu/DMRI_network_development/SC_development/results_HCPD'
+interfileFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_HCPD'
+functionFolder<-'D:/xuxiaoyu/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
+FigureFolder<-'D:/xuxiaoyu/DMRI_network_development/SC_development/Figure_HCPD_final/SA12'
 
 #### load data
 CVthr = 75
 derivative <- readRDS(paste0(resultFolder, '/derivative.df78_CV', CVthr,'.rds'))
-source(paste0(functionFolder, '/colorbarvalue.R'))
 
 #### Connectional axis rank
 Matrix12<-matrix(NA, nrow=12, ncol=12)
@@ -61,7 +60,7 @@ ggplot(data=derivative)+
   #scale_y_continuous(breaks = NULL)+
   #geom_hline(yintercept = 78)+
   ylab("S-A connectional axis rank")+xlab("Age (years)")+ggtitle(label="HCP-D")+
-  labs(color="SC change rate", fill="SC change rate")+
+  labs(color="Derivatives", fill="Derivatives")+
   #scale_x_continuous(breaks = NULL)+
   theme_classic()+
   theme(axis.text=element_text(size=20, color='black'),
@@ -70,8 +69,5 @@ ggplot(data=derivative)+
         legend.text = element_text(size=20, color='black'), 
         legend.title = element_text(size=20, color='black'))
 ggsave(paste0(FigureFolder,'/CV',CVthr,  '/SA12_sumSCinvnode_fit/significant_derivative.tiff'), width=20, height =14, units = "cm")
-
-
-
 
 

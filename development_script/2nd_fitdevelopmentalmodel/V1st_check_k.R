@@ -4,48 +4,31 @@ library(mgcv)
 library(parallel)
 interfileFolder_HCP <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_HCPD'
 interfileFolder_ABCD <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_ABCD'
+interfileFolder_HBN <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_HBN'
 interfileFolder_ChineseCohort <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_ChineseCohort'
 functionFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
 FigureFolderABCD <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/Figure_ABCD_final/SA12/CV75'
 FigureFolderHCPD <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/Figure_HCPD_final/SA12/CV75'
+FigureFolderHBN <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/Figure_HBN_final/SA12/CV75'
 FigureFolderChineseCohort<-'D:/xuxiaoyu/DMRI_network_development/SC_development/Figure_ChineseCohort_final/SA12/CV75'
 resultFolderABCD <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/results_ABCD'
 resultFolderHCPD <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/results_HCPD'
+resultFolder_HBN<-'D:/xuxiaoyu/DMRI_network_development/SC_development/results_HBN'
 resultFolder_ChineseCohort <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/results_ChineseCohort'
 
 source(paste0(functionFolder, '/gamsmooth.R'))
 source(paste0(functionFolder, '/gammsmooth.R'))
-SCdata.hcp <- readRDS(paste0(interfileFolder_HCP, "/SCdata_SA12_CV75_sumSCinvnode.sum.msmtcsd.combatage.rds"))
-SCdata.ABCD <- readRDS(paste0(interfileFolder_ABCD, '/SCdata_SA12_CV75_sumSCinvnode.sum.msmtcsd.combatage.rds'))
-SCdata.ChineseCohort <- readRDS(paste0(interfileFolder_ChineseCohort, '/SCdata_SA12_CV75_sumSCinvnode.sum.msmtcsd.combatage.rds'))
+SCdata.hcp <- readRDS(paste0(interfileFolder_HCP, "/SCdata_SA12_CV75_sumSCinvnode.sum.msmtcsd.combatgam.rds"))
+SCdata.ABCD <- readRDS(paste0(interfileFolder_ABCD, '/SCdata_SA12_CV75_sumSCinvnode.sum.msmtcsd.combatgam_age_sex_meanfd.rds'))
+SCdata.ChineseCohort <- readRDS(paste0(interfileFolder_ChineseCohort, '/SCdata_SA12_CV75_sumSCinvnode.sum.msmtcsd.combatgam.rds'))
 
 # load models
-#gammodel.HCP.k3 <- readRDS(paste0(interfileFolder_HCP, '/gammodel78_sumSCinvnode_over8_CV75.rds'))
-#gammodel.ABCD.k3 <- readRDS(paste0(interfileFolder_ABCD, '/gammodel78_sumSCinvnode_over8_siteall_CV75.rds'))
+gammodel.HCP.k3 <- readRDS(paste0(interfileFolder_HCP, '/gammodel78_sumSCinvnode_over8_CV75.rds'))
+gammodel.ABCD.k3 <- readRDS(paste0(interfileFolder_ABCD, '/gammodel78_sumSCinvnode_over8_siteall_CV75.rds'))
+gammodel.CC.k3 <- readRDS(paste0(interfileFolder_ChineseCohort, '/gammodel78_sumSCinvnode_CV75.rds'))
 
 # HCPD k=3~6
 ####################################
-AIC_k3_6 <- data.frame(region=paste0("SC.", 1:78), AIC.k3=rep(NA,78), AIC.k4=rep(NA,78),
-                       AIC.k5=rep(NA,78),AIC.k6=rep(NA,78))
-SCdata.hcp$sex <- as.factor(SCdata.hcp$sex)
-covariates<-"sex+mean_fd"
-dataname<-"SCdata.hcp"
-smooth_var<-"age"
-for (k in c(4,5,6)){
-  for (i in 1:78){
-    model.k3.tmp <- gammodel.HCP.k3[[i]]
-    AIC_k3_6$region[i] <- as.character(model.k3.tmp$terms[[2]])
-    region <- AIC_k3_6$region[i]
-    model.kN.tmp<-gam.fit.smooth(region, dataname, smooth_var, covariates, knots=k, set_fx=TRUE, stats_only = TRUE, mod_only=TRUE)
-    df.tmp <- AIC(model.k3.tmp, model.kN.tmp)
-    AIC_k3_6$AIC.k3[i] <- df.tmp$AIC[1]
-    AIC_k3_6[i, paste0('AIC.k', k)] <- df.tmp$AIC[2]
-  }
-}
-min.index <- apply(AIC_k3_6, 1, function(x) which.min(x))
-AIC_k3_6$min.index <- min.index+1
-table(AIC_k3_6$min.index) # 52/78 edges have the minimal AIC when k=3.
-
 ## bootstrap
 num_cores <- detectCores() - 8
 cl <- makeCluster(num_cores)
@@ -100,8 +83,8 @@ choice.df$MostFrequent <- apply(choice.df, 1, function(row) {
 })
 
 table(choice.df$MostFrequent)
-# 3   4   5   6 
-# 777  72  75  76
+#  3   4   5   6 
+# 773  69  82  76
 
 choice.df$modelnum_k3 <- rowSums(choice.df[,2:79] == 3)
 write.csv(choice.df, paste0(resultFolderHCPD, "/select_k_gam.csv"), row.names = F)
@@ -143,28 +126,6 @@ ggsave(paste(FigureFolderHCPD, '/GAM_k_choose_modelnum.svg', sep = ''), width = 
 
 # ABCD k=3~6
 ####################################################
-AIC_k3_6.abcd <- data.frame(region=paste0("SC.", 1:78), AIC.k3=rep(NA,78), AIC.k4=rep(NA,78),
-                       AIC.k5=rep(NA,78),AIC.k6=rep(NA,78))
-SCdata.ABCD$sex <- as.factor(SCdata.ABCD$sex)
-covariates<-"sex+mean_fd"
-dataname<-"SCdata.ABCD"
-smooth_var<-"age"
-for (k in c(4,5,6)){
-  for (i in 1:78){
-    model.k3.tmp <- gammodel.ABCD.k3[[i]]
-    AIC_k3_6.abcd$region[i] <- as.character(model.k3.tmp$gam$terms[[2]])
-    region <- AIC_k3_6.abcd$region[i]
-    model.kN.tmp<-gamm.fit.smooth(region, dataname, smooth_var, covariates, knots=k, set_fx=TRUE, stats_only = TRUE, mod_only=TRUE)
-    df.tmp <- AIC(model.k3.tmp$mer, model.kN.tmp$mer)
-    AIC_k3_6.abcd$AIC.k3[i] <- df.tmp$AIC[1]
-    AIC_k3_6.abcd[i, paste0('AIC.k', k)] <- df.tmp$AIC[2]
-  }
-}
-
-min.index <- apply(AIC_k3_6.abcd, 1, function(x) which.min(x))
-AIC_k3_6.abcd$min.index <- min.index+1
-table(AIC_k3_6.abcd$min.index) # 71/78 edges have the minimal AIC when k=3.
-
 ## bootstrap
 num_cores <- detectCores() - 8
 cl <- makeCluster(num_cores)
@@ -260,15 +221,9 @@ ggsave(paste(FigureFolderABCD, '/GAM_k_choose_modelnum.tiff', sep = ''), width =
 ggsave(paste(FigureFolderABCD, '/GAM_k_choose_modelnum.svg', sep = ''), width = 12, height = 10, units = "cm")
 ################################################
 
+
 # ChineseCohort k=3~6
 #########################################
-AIC_k3_6 <- data.frame(region=paste0("SC.", 1:78), AIC.k3=rep(NA,78), AIC.k4=rep(NA,78),
-                       AIC.k5=rep(NA,78),AIC.k6=rep(NA,78))
-SCdata.ChineseCohort$Sex <- as.factor(SCdata.ChineseCohort$Sex)
-covariates<-"Sex+mean_fd"
-dataname<-"SCdata.ChineseCohort"
-smooth_var<-"Age"
-
 ## bootstrap
 num_cores <- detectCores() - 8
 cl <- makeCluster(num_cores)
@@ -324,7 +279,7 @@ choice.df$MostFrequent <- apply(choice.df, 1, function(row) {
 
 table(choice.df$MostFrequent)
 # 3   4   5   6 
-# 814 129  27  30 
+# 617 153 196  34 
 
 choice.df$modelnum_k3 <- rowSums(choice.df[,2:79] == 3)
 write.csv(choice.df, paste0(resultFolder_ChineseCohort, "/select_k_gam.csv"), row.names = F)

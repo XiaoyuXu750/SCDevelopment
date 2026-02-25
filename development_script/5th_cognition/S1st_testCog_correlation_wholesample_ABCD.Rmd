@@ -17,25 +17,25 @@ rm(list = ls())
 CVthr=75
 wdpath <- getwd()
 if (str_detect(wdpath, "ibmgpfs")){
-  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/results_ABCD'
-  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/interdataFolder_ABCD'
-  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/Rcode_SCdevelopment/gamfunction'
+  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/results_ABCD'
+  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/interdataFolder_ABCD'
+  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/Rcode_SCdevelopment/gamfunction'
 
 }else{
   resultFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/results_ABCD'
   interfileFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_ABCD'
   functionFolder<-'D:/xuxiaoyu/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
   FigureFolder<-paste0('D:/xuxiaoyu/DMRI_network_development/SC_development/Figure_ABCD_final/SA12/CV', CVthr)
-  source(paste0(functionFolder, "/SCrankcorr.R"))
+  
 }
 # load data
-SCdata<-readRDS(paste0(interfileFolder, '/SCdata_SA12_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.combatNTBfluid_cog2SC.rds'))
+SCdata<-readRDS(paste0(interfileFolder, '/SCdata_SA12_CV75_sumSCinvnode.sum.msmtcsd.combatgam_neuroharmonize_cognition.rds'))
 meandistance <- read.csv(paste0(interfileFolder, "/average_EuclideanDistance_12.csv"))
 meandistance <- meandistance$Edistance
-SCdata$age <- SCdata$age / 12
+
 # source function
 source(paste0(functionFolder, "/gamcog.R"))
-source(paste0(functionFolder, '/colorbarvalue.R'))
+source(paste0(functionFolder, "/SCrankcorr.R"))
 
 ```
 
@@ -47,55 +47,34 @@ Cogvar <- "nihtbx_fluidcomp_uncorrected"
 summary(SCdata[,Cogvar])
 nonna_index<-which(!is.na(SCdata[ ,Cogvar]))
 SCdata.cog<-SCdata[nonna_index,]
-SCdata.cog <- SCdata.cog[SCdata.cog$eventname=="baseline_year_1_arm_1",]
+SCdata.cog$eventname <- str_split_i(SCdata.cog$scanID, "ses-", 2)
+SCdata.cog <- SCdata.cog[SCdata.cog$eventname=="baselineYear1Arm1",]
 cogagemodel <- gam(nihtbx_fluidcomp_uncorrected~s(age,k=3, fx=TRUE)+sex+mean_fd, data=SCdata.cog)
 t <- summary(cogagemodel)
-print(paste("age, sex, mean_fd can explain", round(t$r.sq, 3), "variance of cognition."))
+print(paste("age, sex, mean_fd can explain", round(t$r.sq, 3), "variance of cognition.")) # 0.083
 dataname<-"SCdata.cog"
 smooth_var<-"age"
 covariates<-"sex+mean_fd"
 knots<-3
 corrmethod<-"pearson"
 
-num_cores <- detectCores() - 8
-cl <- makeCluster(num_cores)
-clusterExport(cl, varlist = ls(), envir = .GlobalEnv)
-invisible(clusterEvalQ(cl, {
-  library(mgcv)
-  library(parallel)
-  library(psych)
-  library(reshape)
-  library(RColorBrewer)
-  library(tidyverse)
-  source(paste0(functionFolder, '/gamcog.R'))
-  source(paste0(functionFolder, '/plotdata_generate.R'))
-}))
 rerun <- F
 # fit model
 if (rerun==T){
-  resultsum <- parLapply(cl, 1:78, function(x) {
+  resultsum <- mclapply(1:78, function(x) {
     SClabel <- grep("SC.", names(SCdata), value=T)[x]
     region <- SClabel
-    gamresult <-
-      gam.fit.cognition(
-        region,
-        dataname,
-        Cogvar,
-        smooth_var, 
-        covariates, 
-        knots,
-        corrmethod, set_fx = TRUE, stats_only = TRUE
-      )
-    gamresult <- as.data.frame(gamresult)
+    gamresult <-gam.fit.cognition(region, dataname, Cogvar, smooth_var, covariates, knots, set_fx = T, stats_only = T)
+    #gamresult <- as.data.frame(gamresult[[1]])
     return(gamresult)
-  })
+  }, mc.cores = 50)
   SC_Cog_results.df <- do.call(rbind, lapply(resultsum, function(x) data.frame(x)))
   SC_Cog_results.df[,c(3:10)]<-lapply(SC_Cog_results.df[,c(3:10)], as.numeric)
   SC_Cog_results.df$corr.p.fdr<-p.adjust(SC_Cog_results.df$corrp, method="fdr")
   SC_Cog_results.df$anova.cov.p.fdr<-p.adjust(SC_Cog_results.df$anova.cov.pvalue, method="fdr")
   SC_Cog_results.df$gam.smooth.p.fdr<-p.adjust(SC_Cog_results.df$gam.cog.pvalue, method="fdr")
   summary(SC_Cog_results.df)
-  SC_Cog_results.df$parcel[which.min(SC_Cog_results.df$gam.cog.t)] # SC.74
+  SC_Cog_results.df$parcel[which.min(SC_Cog_results.df$gam.cog.t)] # SC.72
   saveRDS(SC_Cog_results.df, paste0(interfileFolder, "/SC_Cog_results_", Cogvar,"_CV", CVthr,"_cog2SC.rds"))
   length(SC_Cog_results.df$parcel[SC_Cog_results.df$anova.cov.p.fdr<0.05])}else{
     SC_Cog_results.df <- readRDS(paste0(interfileFolder, "/SC_Cog_results_", Cogvar,"_CV", CVthr,"_cog2SC.rds"))
@@ -105,14 +84,7 @@ SC_Cog_results.df.whole <- SC_Cog_results.df
 SCrankresult.whole<-SCrankcorr(SC_Cog_results.df.whole,"gam.cog.t", 12)
 print(paste("Correlation coefficient between cognitve associations and connectional axis is", round(SCrankresult.whole$r.spearman,2), "with a P value of", round(SCrankresult.whole$p.spearman,3)))
 print(SCrankresult.whole)
-print("Next, correlation between cognitive associations and connectional axis is tested while controlling for Euclidean distance.")
-SC_Cog_results.df.whole$meandistance <- meandistance
-corr.test(SC_Cog_results.df.whole$gam.cog.t, SC_Cog_results.df.whole$meandistance, method = "pearson") 
-SC_Cog_results.df.whole$gam.cog.t_control_distance[which(!is.na(SC_Cog_results.df.whole$gam.cog.t))] <- residuals(lm(gam.cog.t~meandistance, data=SC_Cog_results.df.whole))
-corr.test(SC_Cog_results.df.whole$gam.cog.t_control_distance, SC_Cog_results.df.whole$meandistance, method = "pearson") # r=0
-SCrankresult.whole.controllength <- SCrankcorr(SC_Cog_results.df.whole, "gam.cog.t_control_distance", 12, dsdata=FALSE)
-SCrankresult.whole.controllength
-print(paste("Correlation coefficient between cognitve associations regressing out Euclidean distance and connectional axis is", round(SCrankresult.whole.controllength$r.spearman,2), "with a P value of", round(SCrankresult.whole.controllength$p.spearman,3)))
+
 
 ```
 
@@ -137,7 +109,7 @@ mytheme<-theme(axis.text=element_text(size=23.2, color="black"),
                plot.background=element_rect(fill="transparent"),
                panel.background=element_rect(fill="transparent"),plot.margin = margin(t=10,r=5,b=5,l=5, unit="pt"),
                legend.position = "none")
-width = height = 16.5
+
 
 Fig <- ggplot(data=SC_Cog_results.tmp)+
   geom_point(aes(x=SCrank, y=gam.cog.t, color=gam.cog.t), size=5.5)+
@@ -147,8 +119,8 @@ Fig <- ggplot(data=SC_Cog_results.tmp)+
   theme_classic()+mytheme
   
 Fig
-ggsave(paste0(FigureFolder, '/cognition/', Cogvar, '/CorrTvalue_SCrankcorr_n12_siteall.tiff'), Fig, width=17, height =14, units = "cm")
-ggsave(paste0(FigureFolder, '/cognition/', Cogvar, '/CorrTvalue_SCrankcorr_n12_siteall.svg'), Fig, dpi=600, width=width, height =height, units = "cm")
+ggsave(paste0(FigureFolder, '/cognition/', Cogvar, '/CorrTvalue_SCrankcorr_n12_siteall.tiff'), Fig, width=16.5, height =16, units = "cm")
+
 
 Matrix.tmp.T <- Matrix.tmp
 Matrix.tmp.T[lower.tri(Matrix.tmp.T, diag = T)] <- SC_Cog_results.tmp$gam.cog.t
@@ -179,7 +151,7 @@ Fig<-ggplot(data =matrixtmp.df.melt)+
   geom_tile(aes(x=variable, y=nodeid, fill = value, color=value))+
   scale_fill_distiller(type="seq", palette = "RdBu",limits=c(lwth, -lwth),na.value = "grey")+
   scale_color_distiller(type="seq", palette = "RdBu",limits=c(lwth, -lwth),na.value = "grey")+
-  geom_text(data =matrixtmp.df.sig.melt, aes(x=variable, y=nodeid, label = "*"), vjust = 0.7, hjust = 0.5, size=6)+
+  geom_text(data =matrixtmp.df.sig.melt, aes(x=variable, y=nodeid, label = "*"), vjust = 0.7, hjust = 0.5, size=8)+
   geom_linerange(data=linerange_frame, aes(y=y, xmin =xmin, xmax =xmax), color="black", linewidth=0.5)+
   geom_linerange(data=linerange_frame, aes(x=x, ymin =ymin, ymax =ymax), color="black", linewidth=0.5)+
   geom_segment(aes(x = 0.5 , y = -0.5 , xend = 12+0.5 ,yend = -12-0.5), color="black", linewidth=0.5)+
@@ -201,25 +173,7 @@ Fig
 filename<-paste0(FigureFolder, '/cognition/', Cogvar, '/CorrTvalue_Matrix_n12_siteall.tiff')
 ggsave(filename, Fig,  height = 15, width = 16, units = "cm")
 
-## control Euclidean distance
-correlation.df <- SCrankcorr(SC_Cog_results.df.whole, "gam.cog.t_control_distance", 12,dsdata=TRUE)
-lwth <- abs(min(SC_Cog_results.df.whole$gam.cog.t_control_distance))
-Fig <- ggplot(data=correlation.df)+
-  geom_point(aes(x=SCrank, y=gam.cog.t_control_distance, color=gam.cog.t_control_distance), size=5)+
-  geom_smooth(aes(x=SCrank, y=gam.cog.t_control_distance), method ="lm", color="black", linewidth=1.4)+
-  scale_colour_distiller(type="seq", palette = "RdBu",limits=c(-lwth, lwth), direction = -1)+
-  labs(x="S-A connectional axis rank", y=expression("Cognitive association ("*italic("T")*" value)"))+
-  theme_classic()+theme(axis.text=element_text(size=23, color="black"), 
-        axis.title =element_text(size=23),aspect.ratio = 0.97,
-        axis.line = element_line(linewidth=0.6),axis.ticks= element_line(linewidth=0.6),
-        plot.title = element_text(size=20, hjust = 0.5, vjust=2),
-        plot.background=element_rect(fill="transparent"),
-        panel.background=element_rect(fill="transparent"),
-        legend.position = "none")
-  
-Fig
-ggsave(paste0(FigureFolder, '/cognition/', Cogvar, '/CorrTvalue_SCrankcorr_n12_siteall_control_distance.tiff'), Fig, width=13, height =13, units = "cm")
-ggsave(paste0(FigureFolder, '/cognition/', Cogvar, '/CorrTvalue_SCrankcorr_n12_siteall_control_distance.svg'), Fig, dpi=600, width=15, height =13.5, units = "cm")
+
 
 ```
 

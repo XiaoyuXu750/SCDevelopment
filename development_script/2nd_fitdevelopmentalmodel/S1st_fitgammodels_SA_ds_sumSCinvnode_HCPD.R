@@ -9,17 +9,17 @@ wdpath <- getwd()
 ds.resolution <- 12
 elementnum <- ds.resolution*(ds.resolution+1) /2
 # set path
-if (str_detect(wdpath, "Users")){
-  interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_HCPD'
-  functionFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
+if (str_detect(wdpath, "cuizaixu_lab")){
+  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/interdataFolder_HCPD'
+  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/Rcode_SCdevelopment/gamfunction'
 }else{
-  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/interdataFolder_HCPD'
-  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/Rcode_SCdevelopment/gamfunction'
+  interfileFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_HCPD'
+  functionFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
 }
 # set which consistency threshold used to filter spurious streamlines
 CVthr=75
 # load data
-SCdata.sum.merge<-readRDS(paste0(interfileFolder, "/SCdata_SA", ds.resolution,"_CV", CVthr,"_sumSCinvnode.sum.msmtcsd.combatage.rds"))
+SCdata.sum.merge<-readRDS(paste0(interfileFolder, "/SCdata_SA", ds.resolution,"_CV75_sumSCinvnode.sum.msmtcsd.combatgam.rds"))
 nrow(SCdata.sum.merge)
 SCdata.sum.merge$sex <- as.factor(SCdata.sum.merge$sex)
 # source function
@@ -51,7 +51,7 @@ if (str_detect(wdpath, "cuizaixu_lab")){
 ## calculate gam models
 if (str_detect(wdpath, "cuizaixu_lab")){
   resultsum <- mclapply(1:elementnum, function(x){
-    SClabel<-names(SCdata.sum.merge)[1+x]
+    SClabel<-grep("SC.", names(SCdata.sum.merge), value=T)[x]
     region<-SClabel
     gamresult<-gam.fit.smooth(region, dataname, smooth_var, covariates, knots=3, set_fx=TRUE, stats_only = TRUE, mod_only=TRUE)
     return(gamresult)
@@ -65,7 +65,7 @@ if (str_detect(wdpath, "cuizaixu_lab")){
   gammodelsum <- resultsum
   plotdatasum<-mclapply(1:elementnum, function(x){
     modobj<-gammodelsum[[x]]
-    plotdata<- plotdata_generate(modobj, "age")
+    plotdata<- plotdata_generate(modobj, dataname = NA,  "age")
     plotdata$SC_label <- names(plotdata)[14]
     plotdata[,14] <- NULL
     return(plotdata)
@@ -78,7 +78,7 @@ if (str_detect(wdpath, "cuizaixu_lab")){
 # weight at age of 8.
 SCdata.diw <- SCdata.sum.merge
 for (i in 1:elementnum){
-  SClabel <- names(SCdata.sum.merge)[i+1]
+  SClabel <- grep("SC.", names(SCdata.sum.merge), value=T)[i]
   plotdata.tmp <- plotdatasum.df[plotdatasum.df$SC_label==SClabel, ]
   SCdata.diw[ ,SClabel] <- SCdata.sum.merge[ ,SClabel] / plotdata.tmp$fit[1]
 }
@@ -88,7 +88,7 @@ if (str_detect(wdpath, "cuizaixu_lab")){
   dataname<-"SCdata.diw"
   smooth_var<-"age"
   resultsum <- mclapply(1:elementnum, function(x){
-    SClabel<-names(SCdata.sum.merge)[1+x]
+    SClabel<-grep("SC.", names(SCdata.sum.merge), value=T)[x]
     region<-SClabel
     gamresult<-gam.fit.smooth(region, dataname, smooth_var, covariates, knots=3, set_fx=TRUE, stats_only = TRUE, mod_only=TRUE)
     return(gamresult)
@@ -100,7 +100,7 @@ if (str_detect(wdpath, "cuizaixu_lab")){
 # gam results
 if (str_detect(wdpath, "cuizaixu_lab")){
   resultsum <- mclapply(1:elementnum, function(x){
-    SClabel<-names(SCdata.sum.merge)[1+x]
+    SClabel<-grep("SC.", names(SCdata.sum.merge), value=T)[x]
     region<-SClabel
     gamresult<-gam.fit.smooth(region, dataname, smooth_var, covariates, knots=3, set_fx=TRUE, stats_only = FALSE, mod_only=FALSE)
     gamresult<-as.data.frame(gamresult)

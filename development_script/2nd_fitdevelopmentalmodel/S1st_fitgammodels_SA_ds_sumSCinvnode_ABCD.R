@@ -9,22 +9,21 @@ wdpath <- getwd()
 # set resolution
 ds.resolution <- 12
 elementnum <- ds.resolution*(ds.resolution+1) /2
-if (str_detect(wdpath, "Users")){
-  interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_ABCD'
-  functionFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
+if (str_detect(wdpath, "cuizaixu_lab")){
+  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/interdataFolder_ABCD'
+  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/Rcode_SCdevelopment/gamfunction'
 }else{
-  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/interdataFolder_ABCD'
-  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/Rcode_SCdevelopment/gamfunction'
-  
+  interfileFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_ABCD'
+  functionFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
 }
 
 # input consistency threshold used to filter spurious streamlines
 CVthr=75
-SCdata.sum.merge<-readRDS(paste0(interfileFolder, '/SCdata_SA', ds.resolution, '_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.combatage.rds'))
+SCdata.sum.merge<-readRDS(paste0(interfileFolder, '/SCdata_SA', ds.resolution, '_CV', CVthr,'_sumSCinvnode.sum.msmtcsd.combatgam_age_sex_meanfd.rds'))
 SCdata <- SCdata.sum.merge %>% drop_na(c(2:(1+elementnum)))
 nrow(SCdata)
-SCdata[,c("sex", "handness")] <- lapply(SCdata[,c("sex", "handness")], as.factor)
-SCdata$age <- SCdata$age / 12
+SCdata$sex <- as.factor(SCdata$sex)
+
 source(paste0(functionFolder, '/gammsmooth.R'))
 source(paste0(functionFolder, '/plotdata_generate.R'))
 
@@ -71,12 +70,13 @@ if (str_detect(wdpath, "cuizaixu_lab")){
 #### generate function data
 if (str_detect(wdpath, "cuizaixu_lab")){
   gammodelsum <- resultsum
+  agevect <- SCdata$age
   plotdatasum<-mclapply(1:elementnum, function(x){
     modobj<-gammodelsum[[x]]
     if (is.na(modobj[1])){
       plotdata<-NA
     }else{
-      plotdata<- plotdata_generate(modobj, "age")
+      plotdata<- plotdata_generate(modobj, dataname=NA, smooth_var="age")
       plotdata$SC_label <- names(plotdata)[14]
       plotdata[,14] <- NULL
     }
@@ -85,6 +85,7 @@ if (str_detect(wdpath, "cuizaixu_lab")){
   plotdatasum.df <- do.call(rbind, lapply(plotdatasum, function(x) data.frame(x)))
   saveRDS(plotdatasum.df, paste0(interfileFolder, '/plotdatasum.df_SA', ds.resolution, '_sumSCinvnode_siteall_CV',CVthr,'.rds'))
 }else{plotdatasum.df <- readRDS(paste0(interfileFolder, '/plotdatasum.df_SA', ds.resolution, '_sumSCinvnode_siteall_CV',CVthr,'.rds'))}
+
 # To avoid the influence of averaged weight on derivative analyses, we divided SC strength of each edges by their
 # weight at age of 8.9.
 if (str_detect(wdpath, "cuizaixu_lab")){
@@ -95,7 +96,7 @@ if (str_detect(wdpath, "cuizaixu_lab")){
     SCdata.diw[ ,SClabel] <- SCdata[ ,SClabel] / plotdata.tmp$fit[1]
   }
   saveRDS(SCdata.diw, paste0(interfileFolder, "/SCdata.diw_CV", CVthr, ".rds"))
-  SCdata.diw[,c("sex", "handness")] <- lapply(SCdata.diw[,c("sex", "handness")], as.factor)
+  SCdata.diw$sex <- as.factor(SCdata.diw$sex)
   covariates<-"sex+mean_fd"
   dataname<-"SCdata.diw"
   smooth_var<-"age"
@@ -110,6 +111,7 @@ if (str_detect(wdpath, "cuizaixu_lab")){
   saveRDS(resultsum, paste0(interfileFolder, '/gammodel', elementnum, '_sumSCinvnode_over8_siteall_CV', CVthr,'_scale_TRUE.rds'))
   # gam results
   resultsum <- mclapply(1:elementnum, function(x){
+    set.seed(925)
     SClabel<-grep("SC.",names(SCdata.sum.merge),value=T)[x]
     region<-SClabel
     gamresult<-gamm.fit.smooth(region, dataname, smooth_var, covariates, knots=3, set_fx=TRUE, stats_only = FALSE, mod_only=FALSE)

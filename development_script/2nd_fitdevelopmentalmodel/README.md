@@ -26,4 +26,14 @@ Compute Euclidean distance between pairwise systems in 12x12 matrix.
 ## sup_sigderivative_HCPD.R
 This script visualized the age window during which the SC strength develops significantly. The age windows were identified based on the significance of first derivatives.
 
+## R1_ComareStats_HCPD.R
+We used this script to compare partial R² values and second derivatives across SS, SA, and AA connections.
+
+## R2_development_PCA_HCPD.R
+In this script, we first compare the S–A connectional axis with connectional axes derived from the principal functional gradient and the T1w/T2w ratio.
+Next, we derive a data-driven developmental axis from trajectories of developmental rates and compare this axis with the three connectional axes.
+
+## R3_WithinPersonEffect.R
+We examined within-person developmental effects using longitudinal data from the ABCD study and tested whether these effects varied by cognitive level and p-factor.
+
 

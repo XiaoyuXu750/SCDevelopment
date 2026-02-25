@@ -8,4 +8,8 @@ This script facilitates age-resolved developmental effect analysis. Spearman’s
 ## S2nd_fitgammodels_SA12sumSCinvnode_ageseperate_HCPD.Rmd
 At the age point where the alignment of developmental rates with the S-A connectional axis experiences a reversal, the HCP-D dataset is partitioned into two sub-datasets. Next, developmental effects were estimated for each connection within the two subdatasets. Following this, correlations between the age effect size, as measured by partial R-square, and the connectional axis rank were computed.
 
+## R1_SexCompare.R, R1_SexCompare_Plot.R
+We computed age-resolved alignment between developmental rates and the S–A connectional axis separately in females and males, and compared the ages at which the alignment crossed zero between sexes using a permutation test.
+
+
 

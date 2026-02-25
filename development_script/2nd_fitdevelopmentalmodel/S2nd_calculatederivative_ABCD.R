@@ -16,14 +16,14 @@ ds.resolution <- 12
 elementnum <- ds.resolution*(ds.resolution+1) /2
 # set path
 wdpath <- getwd()
-if (str_detect(wdpath, "Users")){
-  interfileFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/interdataFolder_ABCD'
-  functionFolder <- '/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
-  resultFolder<-'/Users/xuxiaoyu_work/Cuilab/DMRI_network_development/SC_development/results_ABCD'
+if (str_detect(wdpath, "ibmgpfs")){
+  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/interdataFolder_ABCD'
+  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/Rcode_SCdevelopment/gamfunction'
+  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/results_ABCD'
 }else{
-  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/interdataFolder_ABCD'
-  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/Rcode_SCdevelopment/gamfunction'
-  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/results_ABCD'
+  interfileFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_ABCD'
+  functionFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/Rcode_SCdevelopment/gamfunction'
+  resultFolder<-'D:/xuxiaoyu/DMRI_network_development/SC_development/results_ABCD'
 }
 
 #### load data
@@ -43,17 +43,19 @@ source(paste0(functionFolder, '/gamderivatives.R'))
 
 ## derivative
 #######################################
+# set cluster
+
 derivative.sum<-mclapply(1:nrow(gamresultsum), function(x){
   SClabel.tmp <- gamresultsum$parcel[x]
   modobj<-gammodelsum[[x]]
   draws<-1
   increments<-1000
-  derivdata<- gam.derivatives(modobj, "age",draws, increments, return_posterior_derivatives = FALSE)
+  derivdata<- gam.derivatives(modobj, "age", NA, draws, increments, return_posterior_derivatives = FALSE)
   derivdata$label_ID<-gamresultsum$parcel[x]
   meanSC <- mean(modobj$gam$model[,SClabel.tmp],na.rm=T)
   derivdata$meanSC<-meanSC
   return(derivdata)
-}, mc.cores = 30)
+}, mc.cores = 50)
 
 derivative.df<-do.call(rbind, lapply(derivative.sum, function(x) data.frame(x)))
 saveRDS(derivative.df, paste0(resultFolder, '/derivative.df', elementnum, '_CV', CVthr,'.rds'))
@@ -65,7 +67,7 @@ derivative.posterior.sum<-mclapply(1:nrow(gamresultsum), function(x){
   draws<-1000
   increments<-1000
   SClabel<-gamresultsum$parcel[x]
-  derivdata<- gam.derivatives(modobj, "age",draws, increments, return_posterior_derivatives = TRUE)
+  derivdata<- gam.derivatives(modobj, "age", NA, draws, increments, return_posterior_derivatives = TRUE)
   derivdata$SCrank<-SCrank.df$SCrank[SCrank.df$parcel==SClabel]
   meanSC <- mean(modobj$gam$model[,SClabel],na.rm=T)
   derivdata$meanSC<-meanSC

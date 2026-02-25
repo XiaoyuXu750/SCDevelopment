@@ -23,10 +23,10 @@ rm(list = ls())
 CVthr = 75
 wdpath <- getwd()
 if (str_detect(wdpath, "cuizaixu_lab")){
-  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/interdataFolder_HCPD'
-  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/Rcode_SCdevelopment/gamfunction'
-  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SCdevelopment/results_HCPD'
-  
+  interfileFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/interdataFolder_HCPD'
+  functionFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/Rcode_SCdevelopment/gamfunction'
+  resultFolder <- '/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/results_HCPD'
+  FigureFolder<-'/ibmgpfs/cuizaixu_lab/xuxiaoyu/SC_development/Figure_HCPD_final/SA12'
 }else{
   resultFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/results_HCPD'
   interfileFolder <- 'D:/xuxiaoyu/DMRI_network_development/SC_development/interdataFolder_HCPD'
@@ -38,7 +38,6 @@ derivative.posterior.df <- readRDS(paste0(resultFolder, '/derivative.posterior.d
 derivative.df <- readRDS(paste0(resultFolder, '/derivative.df78_CV', CVthr,'.rds'))
 #### source function
 source(paste0(functionFolder, '/gamderivatives.R'))
-source(paste0(functionFolder, '/colorbarvalue.R'))
 source(paste0(functionFolder, '/SCrankcorr.R'))
 
 #### calculate S-A connectional axis in 12*12
@@ -57,6 +56,7 @@ for (x in 1:12){
 }
 Matrix12.SCrank[indexup12]<-NA
 SCrank12<-rank(Matrix12.SCrank[indexsave12], ties.method = "average")
+
 ```
 
 ## 1. calculate correlation between posterior derivatives and S-A connectional axis
@@ -111,8 +111,9 @@ age.0.corr.diw.median <- median(age.0.corr.diw) #median age #bayes
 age.0.corr.diw.CI <- quantile(age.0.corr.diw, probs = c(0.025, 0.975)) #compute the credible interval based on all draws
 age.0.corr.diw.lower <- age.0.corr.diw.CI[[1]]
 age.0.corr.diw.upper <- age.0.corr.diw.CI[[2]]
-age.0.corr.diw.median # 15.5192 (CV75) ; 15.99007 (CV25)
-age.0.corr.diw.CI # 15.29771 15.79621 (CV75) ; 15.71313 16.33660 (CV25)
+age.0.corr.diw.median
+age.0.corr.diw.CI
+
 #### median corr and 95% CI
 # diw
 posterior.corr.diw.median <- lapply(c(1:1000), function(x) median(round(deri.SCrank.posterior.corr[,x],4)))
@@ -134,28 +135,16 @@ loess.up <- loess(up.95CI~age, data=df.poscorr.diw, span=0.2)
 df.poscorr.diw$median.loess <- loess.median$fitted
 df.poscorr.diw$lw.95CI.loess <- loess.lw$fitted
 df.poscorr.diw$up.95CI.loess <- loess.up$fitted
-print("Fig. 3B")
-if (CVthr==25){
-  mytheme <- theme(axis.text=element_text(size=20.5, color="black"), 
-        axis.title =element_text(size=20.5),
-        axis.line = element_line(linewidth = 0.5),
-        aspect.ratio =0.93,
-        plot.background=element_rect(fill="transparent"),
-        panel.background=element_rect(fill="transparent"),
-        legend.title=element_text(size=15),
-        legend.text=element_text(size=15))
-  mywidth <- myheight <-15
-}else{
-  mytheme <- theme(axis.text=element_text(size=21, color="black"), 
-        axis.title =element_text(size=21),
-        axis.line = element_line(linewidth = 0.5),
-        aspect.ratio =0.9,
-        plot.background=element_rect(fill="transparent"),
-        panel.background=element_rect(fill="transparent"),
-        legend.title=element_text(size=15),
-        legend.text=element_text(size=15))
-  mywidth <- 20; myheight <-15
-}
+
+mytheme <- theme(axis.text=element_text(size=21, color="black"), 
+                 axis.title =element_text(size=21),
+                 axis.line = element_line(linewidth = 0.5),
+                 aspect.ratio =0.9,
+                 plot.background=element_rect(fill="transparent"),
+                 panel.background=element_rect(fill="transparent"),
+                 legend.title=element_text(size=15),
+                 legend.text=element_text(size=15))
+
 ggplot(data=df.poscorr.diw)+
   geom_ribbon(aes(x=age, ymin=lw.95CI.loess, ymax=up.95CI.loess), alpha=0.3)+
   geom_line(aes(x=age, y=median.loess), linewidth=1.5)+
@@ -166,8 +155,8 @@ ggplot(data=df.poscorr.diw)+
   theme_classic()+
   labs(x="Age (years)", y="Alignment with \nS-A connectional axis (rho)")+
   mytheme
-ggsave(paste0(FigureFolder,'/CV', CVthr, '/Alignment_development/SA12_posDeriv_divweight_corr.tiff'), width=12, height=12, units="cm")
-ggsave(paste0(FigureFolder,'/CV', CVthr,  '/Alignment_development/SA12_posDeriv_divweight_corr.svg'), dpi=600, width=mywidth, height =myheight, units="cm")
+ggsave(paste0(FigureFolder,'/CV', CVthr, '/Alignment_development/SA12_posDeriv_divweight_corr.tiff'), width=20, height=15, units="cm")
+
 ### plot age distribution with 0 corr
 ggplot() +
   geom_histogram(aes(age.0.corr.diw, y = ..count..),binwidth = 0.5, linewidth=1,
@@ -182,7 +171,7 @@ ggplot() +
         axis.title = element_text(color = "black", size = 15),
         axis.text.x = element_text(color = "black", size = 20))
 ggsave(paste0(FigureFolder,'/CV', CVthr,  '/Alignment_development/Agedistribution_0corr.tiff'), width=6, height = 6, units="cm")
-ggsave(paste0(FigureFolder, '/CV', CVthr, '/Alignment_development/Agedistribution_0corr.svg'), width=6, height =6, units="cm")
+
 
 ```
 
@@ -246,8 +235,6 @@ ggsave(paste0(FigureFolder,'/CV', CVthr,  '/Alignment_development/deri.diw_corr_
 ggsave(paste0(FigureFolder,'/CV', CVthr,  '/Alignment_development/deri.diw_corr_SCrank12ageAll.svg'), width = 12, height = 10, units="cm")
 minderiv <- min(c(df.age8$derivative, df.age15$derivative, df.age21$derivative))
 maxderiv <- max(c(df.age8$derivative, df.age15$derivative, df.age21$derivative))
-probratio <- abs(minderiv) / (maxderiv-minderiv)
-valuesderiv <- colorbarvalues(seq(minderiv, maxderiv, length.out=100), probratio)
 linerange_frame<-data.frame(x=c(0.5,12+0.5), ymin =rep(-12-0.5, times=2), ymax =rep(-0.5, times=2),
                             y=c(-0.5, -12-0.5), xmin=rep(0.5, times=2), xmax=rep(12+0.5, times=2))
 
@@ -376,13 +363,14 @@ ggplot(data=derivative.df.merge)+
   #scale_y_continuous(breaks=c(-0.02, 0, 0.02), labels = c("-2", "0", "2"))+
   labs(x="Age (years)", y="SC change rate", color="Axis rank")+
   theme_classic()+
-  theme(axis.text=element_text(size=21.2, color="black"), 
+  theme(axis.text=element_text(size=21.2, color="black"),
         axis.title =element_text(size=21.2),aspect.ratio = 0.65,
         axis.line = element_line(linewidth=0.5),axis.ticks= element_line(linewidth=0.5),
         plot.title = element_text(size=20, hjust = 0.5, vjust=2),
         plot.background=element_rect(fill="transparent"),
         panel.background=element_rect(fill="transparent"),
         legend.position = "none")
+
 ggsave(paste0(FigureFolder,'/CV', CVthr,  '/Alignment_development/derivative_diw_SA12_changerate.tiff'), width = 20, height = 16, units="cm")
 ggsave(paste0(FigureFolder,'/CV', CVthr,  '/Alignment_development/derivative_diw_SA12_changerate.svg'), dpi=600, width=20, height =16, units="cm")
 write.csv(derivative.df.merge, paste0(interfileFolder, '/derivative_df_12_merge_CV', CVthr,'.csv'), row.names = F)
