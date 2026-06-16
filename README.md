@@ -18,9 +18,6 @@ To facilitate the exploration of these developmental patterns, we created an int
 
 The system requirements and installation guide for each software can be found on its respective website.
 
-## demopath
-This folder contains the demographic, cognitive, and psychopathological characteristics of the participants in the ABCD and HCP-D datasets. `DemodfScreenFinal.csv` is for the ABCD dataset. `HCPD_demo_behav.csv` is for the HCP-D dataset. The codes for organizing these data frames are located in `/development_script/1st_dataclean/merge_demography_info_and_screen`.
-
 ## wd
 This folder contains statistical magnitudes, data for visualization and derivatives derived from the analyses. It has four sub-folders:
 * [interdataFolder_ABCD](https://github.com/XiaoyuXu750/SCDevelopment/tree/main/wd/interdataFolder_ABCD) : Statistical magnitudes derived from general additive mixed models (GAMM) or general additive models (GAM) fitted to the ABCD dataset.
